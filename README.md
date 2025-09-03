@@ -12,6 +12,8 @@ Checkmate Spec Preview is a modern full-stack application that combines Next.js 
 │   ├── src/
 │   │   ├── app/                # App Router pages
 │   │   ├── hooks/              # Custom React hooks
+│   │   ├── components/         # Custom UI components
+│   │   │   └── magicui/       # Magic UI components
 │   │   └── lib/                # API client utilities
 │   ├── package.json
 │   └── tailwind.config.ts      # TailwindCSS 4.0 config
@@ -44,7 +46,7 @@ Checkmate Spec Preview is a modern full-stack application that combines Next.js 
 - **Next.js 15**: Latest features with App Router
 - **TypeScript**: Full type safety
 - **TailwindCSS 4.0**: Modern utility-first styling
-- **Dark Mode**: HSL gray-1000 based theme system
+- **Dark Mode**: HSL gray-1000 based theme system with animated toggle
 - **Responsive Design**: Mobile-friendly interface
 - **Real-Time UI**: WebSocket integration for live updates
 
@@ -97,6 +99,12 @@ cd checkmate-spec-preview
 
 # Install dependencies
 npm install
+
+# Install Magic UI components
+npx shadcn@latest add "https://magicui.design/r/animated-theme-toggler"
+
+# Install additional dependencies
+npm install clsx tailwind-merge
 
 # Create environment file
 cp .env.local.example .env.local  # Add your API keys
@@ -165,6 +173,8 @@ NEXT_PUBLIC_WS_URL=ws://localhost:8000
 - **Tanstack Query** - Data fetching
 - **Zustand** - State management
 - **Socket.io Client** - Real-time communication
+- **Magic UI** - Animated components
+- **clsx & tailwind-merge** - Conditional styling
 
 ### Backend
 - **FastAPI** - Modern Python web framework
@@ -197,6 +207,7 @@ NEXT_PUBLIC_WS_URL=ws://localhost:8000
 - Loading states and typing indicators
 - Responsive design for all screen sizes
 - Accessible color contrast ratios
+- Animated theme toggler with smooth transitions
 
 ## 🧪 Testing & Validation
 

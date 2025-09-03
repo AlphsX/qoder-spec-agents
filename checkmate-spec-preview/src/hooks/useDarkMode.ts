@@ -11,7 +11,8 @@ export function useDarkMode() {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     
     if (savedTheme) {
-      setIsDarkMode(savedTheme === 'dark');
+      const savedValue = savedTheme === 'dark';
+      setIsDarkMode(savedValue);
     } else {
       setIsDarkMode(prefersDark);
     }
@@ -29,7 +30,7 @@ export function useDarkMode() {
   }, [isDarkMode]);
 
   const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
+    setIsDarkMode(prev => !prev);
   };
 
   return { isDarkMode, toggleDarkMode };

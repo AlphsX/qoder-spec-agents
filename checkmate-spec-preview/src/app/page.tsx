@@ -1,8 +1,9 @@
-'use client'; // cd /Users/linkalphx/Claude/checkmate-spec-preview && npm run dev
+'use client'; // cd /Users/linkalphx/Sync-AI/checkmate-spec-preview && npm run dev
 
 import { useState, useEffect, useRef } from 'react';
-import { Send, Sparkles, Globe, TrendingUp, User, Bot, Mic, Paperclip, Moon, Sun, Plus, Settings, MoreHorizontal, Zap, ChevronLeft } from 'lucide-react';
+import { Send, Sparkles, Globe, TrendingUp, User, Bot, Mic, Paperclip, Plus, Settings, MoreHorizontal, Zap, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useDarkMode } from '@/hooks';
+import { AnimatedThemeToggler } from "@/components/magicui";
 
 interface Message {
   id: string;
@@ -87,18 +88,23 @@ export default function Home() {
         <div className="md:hidden fixed inset-0 z-50 flex">
           <div 
             className="absolute inset-0 bg-black/50 backdrop-blur-sm" 
-            onClick={() => setIsSidebarOpen(false)}
+            onClick={(e) => {
+              // Only close sidebar if clicking directly on the overlay, not on child elements
+              if (e.target === e.currentTarget) {
+                setIsSidebarOpen(false);
+              }
+            }}
           ></div>
-          <div className="relative w-64 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-800 flex-col animate-slide-in">
+          <div className="relative w-64 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-800 flex-col animate-slide-in z-10">
             {/* Mobile Sidebar Header */}
             <div className="p-6 border-b border-gray-200/60 dark:border-gray-800/60">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="relative">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 shadow-lg">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-r from-gray-800 to-gray-600 dark:from-gray-200 dark:to-gray-400 shadow-lg">
                       <Zap className="h-5 w-5 text-white" />
                     </div>
-                    <div className="absolute -top-1 -right-1 h-3 w-3 bg-green-400 rounded-full border-2 border-white dark:border-gray-950"></div>
+                    <div className="absolute -top-1 -right-1 h-3 w-3 bg-gray-600 dark:bg-gray-300 rounded-full border-2 border-white dark:border-gray-950"></div>
                   </div>
                   <div>
                     <h1 className="text-lg font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-gray-100 dark:to-gray-400 bg-clip-text text-transparent">Grok AI</h1>
@@ -116,7 +122,7 @@ export default function Home() {
 
             {/* Mobile New Chat Button */}
             <div className="p-4">
-              <button className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl py-3 px-4 font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
+              <button className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-gray-800 to-gray-700 hover:from-gray-900 hover:to-gray-800 dark:from-gray-100 dark:to-gray-200 dark:hover:from-gray-50 dark:hover:to-gray-100 text-white dark:text-gray-900 rounded-xl py-3 px-4 font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105">
                 <Plus className="h-4 w-4" />
                 <span>New Chat</span>
               </button>
@@ -144,27 +150,28 @@ export default function Home() {
             <div className="p-4 border-t border-gray-200/60 dark:border-gray-800/60">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-2">
-                  <div className="h-8 w-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center">
+                  <div className="h-8 w-8 bg-gradient-to-r from-gray-600 to-gray-500 dark:from-gray-300 dark:to-gray-400 rounded-full flex items-center justify-center">
                     <User className="h-4 w-4 text-white" />
                   </div>
                   <span className="text-sm font-medium">User</span>
                 </div>
                 <div className="flex items-center space-x-1">
-                  <button
-                    onClick={toggleDarkMode}
-                    className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                    title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-                  >
-                    {isDarkMode ? (
-                      <Sun className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                    ) : (
-                      <Moon className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                    )}
-                  </button>
-                  <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                    <Settings className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                  </button>
-                </div>
+                <AnimatedThemeToggler 
+                  isDarkMode={isDarkMode}
+                  toggleDarkMode={toggleDarkMode}
+                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                />
+                <button 
+                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsSidebarOpen(false);
+                  }}
+                  title="Hide sidebar"
+                >
+                  <ChevronLeft className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                </button>
+              </div>
               </div>
             </div>
           </div>
@@ -182,10 +189,10 @@ export default function Home() {
           <div className="flex items-center justify-center">
             <div className={`flex items-center space-x-3 ${isDesktopSidebarCollapsed ? 'justify-center' : ''}`}>
               <div className="relative">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 shadow-lg">
+                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-r from-gray-800 to-gray-600 dark:from-gray-200 dark:to-gray-400 shadow-lg">
                   <Zap className="h-5 w-5 text-white" />
                 </div>
-                <div className="absolute -top-1 -right-1 h-3 w-3 bg-green-400 rounded-full border-2 border-white dark:border-gray-950"></div>
+                <div className="absolute -top-1 -right-1 h-3 w-3 bg-gray-600 dark:bg-gray-300 rounded-full border-2 border-white dark:border-gray-950"></div>
               </div>
               {!isDesktopSidebarCollapsed && (
                 <div>
@@ -201,7 +208,7 @@ export default function Home() {
         <div className="p-4">
           {isDesktopSidebarCollapsed ? (
             <button 
-              className="w-full h-12 flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+              className="w-full h-12 flex items-center justify-center bg-gradient-to-r from-gray-800 to-gray-700 hover:from-gray-900 hover:to-gray-800 dark:from-gray-100 dark:to-gray-200 dark:hover:from-gray-50 dark:hover:to-gray-100 text-white dark:text-gray-900 rounded-xl font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
               title="New Chat"
               onClick={(e) => e.stopPropagation()}
             >
@@ -209,7 +216,7 @@ export default function Home() {
             </button>
           ) : (
             <button 
-              className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white rounded-xl py-3 px-4 font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+              className="w-full flex items-center justify-center space-x-2 bg-gradient-to-r from-gray-800 to-gray-700 hover:from-gray-900 hover:to-gray-800 dark:from-gray-100 dark:to-gray-200 dark:hover:from-gray-50 dark:hover:to-gray-100 text-white dark:text-gray-900 rounded-xl py-3 px-4 font-medium transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
               onClick={(e) => e.stopPropagation()}
             >
               <Plus className="h-4 w-4" />
@@ -237,7 +244,7 @@ export default function Home() {
             </div>
           ) : (
             <div className="space-y-2">
-              <div className="h-10 w-10 mx-auto rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800/50 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800/50 transition-colors flex items-center justify-center" title="Web search capabilities" onClick={(e) => e.stopPropagation()}>
+              <div className="h-10 w-10 mx-auto rounded-xl bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800/50 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-900/50 transition-colors flex items-center justify-center" title="Web search capabilities" onClick={(e) => e.stopPropagation()}>
                 <Globe className="h-4 w-4 text-gray-600 dark:text-gray-400" />
               </div>
               <div className="h-10 w-10 mx-auto rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-900/50 transition-colors flex items-center justify-center" title="Crypto market analysis" onClick={(e) => e.stopPropagation()}>
@@ -255,25 +262,41 @@ export default function Home() {
           {!isDesktopSidebarCollapsed ? (
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <div className="h-8 w-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center">
+                <div className="h-8 w-8 bg-gradient-to-r from-gray-600 to-gray-500 dark:from-gray-300 dark:to-gray-400 rounded-full flex items-center justify-center">
                   <User className="h-4 w-4 text-white" />
                 </div>
                 <span className="text-sm font-medium">User</span>
               </div>
               <div className="flex items-center space-x-1">
-                <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" onClick={(e) => e.stopPropagation()}>
-                  <Settings className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                <button 
+                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" 
+                  onClick={(e) => {e.stopPropagation(); setIsDesktopSidebarCollapsed(!isDesktopSidebarCollapsed);}}
+                  title={isDesktopSidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'}
+                >
+                  {isDesktopSidebarCollapsed ? (
+                    <ChevronRight className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                  ) : (
+                    <ChevronLeft className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                  )}
                 </button>
               </div>
             </div>
           ) : (
             <div className="flex flex-col items-center space-y-2">
-              <div className="h-8 w-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center" title="User">
+              <div className="h-8 w-8 bg-gradient-to-r from-gray-600 to-gray-500 dark:from-gray-300 dark:to-gray-400 rounded-full flex items-center justify-center" title="User">
                 <User className="h-4 w-4 text-white" />
               </div>
               <div className="flex flex-col items-center space-y-1">
-                <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" title="Settings" onClick={(e) => e.stopPropagation()}>
-                  <Settings className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                <button 
+                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" 
+                  onClick={(e) => {e.stopPropagation(); setIsDesktopSidebarCollapsed(!isDesktopSidebarCollapsed);}}
+                  title={isDesktopSidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'}
+                >
+                  {isDesktopSidebarCollapsed ? (
+                    <ChevronRight className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                  ) : (
+                    <ChevronLeft className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                  )}
                 </button>
               </div>
             </div>
@@ -283,46 +306,53 @@ export default function Home() {
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Top Bar */}
-        <header className="bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-b border-gray-200/60 dark:border-gray-800/60 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              {/* Mobile Menu Toggle */}
-              <button 
-                className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              >
-                <MoreHorizontal className="h-5 w-5" />
-              </button>
-              <div>
-                <h2 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-gray-100 dark:to-gray-400 bg-clip-text text-transparent">New Conversation</h2>
-                <p className="text-sm text-gray-500 dark:text-gray-500">Powered by {availableModels.find(m => m.id === selectedModel)?.name || 'AI'}</p>
+        {/* Top Bar - Apple Liquid Glass Effect */}
+        <header className="relative overflow-hidden">
+          {/* Background with liquid glass effect */}
+          <div className="absolute inset-0 bg-white/40 dark:bg-gray-950/40 backdrop-blur-2xl saturate-150 brightness-105"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-white/20 via-gray-50/10 to-white/20 dark:from-gray-900/20 dark:via-gray-800/10 dark:to-gray-900/20"></div>
+          <div className="absolute inset-0 border-b border-white/20 dark:border-gray-800/30 shadow-lg shadow-gray-500/5 dark:shadow-black/20"></div>
+          
+          {/* Content */}
+          <div className="relative z-10 px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                {/* Mobile Menu Toggle */}
+                <button 
+                  className="md:hidden p-2.5 rounded-2xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-md border border-white/20 dark:border-gray-700/30 hover:bg-white/80 dark:hover:bg-gray-700/80 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
+                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                  title={isSidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
+                >
+                  {isSidebarOpen ? (
+                    <ChevronLeft className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                  ) : (
+                    <ChevronRight className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                  )}
+                </button>
+                <div>
+                  <h2 className="text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 dark:from-gray-100 dark:to-gray-300 bg-clip-text text-transparent drop-shadow-sm">New Conversation</h2>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">Powered by {availableModels.find(m => m.id === selectedModel)?.name || 'AI'}</p>
+                </div>
               </div>
-            </div>
-            
-            <div className="flex items-center space-x-3">
-              <select 
-                value={selectedModel} 
-                onChange={(e) => setSelectedModel(e.target.value)}
-                className="rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 px-4 py-2 text-sm font-medium focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
-              >
-                {availableModels.map((model) => (
-                  <option key={model.id} value={model.id}>
-                    {model.name}
-                  </option>
-                ))}
-              </select>
-              <button
-                onClick={toggleDarkMode}
-                className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-              >
-                {isDarkMode ? (
-                  <Sun className="h-5 w-5 text-yellow-400" />
-                ) : (
-                  <Moon className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-                )}
-              </button>
+              
+              <div className="flex items-center space-x-3">
+                <select 
+                  value={selectedModel} 
+                  onChange={(e) => setSelectedModel(e.target.value)}
+                  className="rounded-2xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-md border border-white/20 dark:border-gray-700/30 px-4 py-2.5 text-sm font-medium focus:border-gray-400/50 dark:focus:border-gray-600/50 focus:outline-none focus:ring-2 focus:ring-gray-500/20 dark:focus:ring-gray-400/20 transition-all duration-300 shadow-lg hover:shadow-xl text-gray-700 dark:text-gray-300"
+                >
+                  {availableModels.map((model) => (
+                    <option key={model.id} value={model.id} className="bg-white dark:bg-gray-800">
+                      {model.name}
+                    </option>
+                  ))}
+                </select>
+                <AnimatedThemeToggler 
+                  isDarkMode={isDarkMode}
+                  toggleDarkMode={toggleDarkMode}
+                  className="p-2.5 rounded-2xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-md border border-white/20 dark:border-gray-700/30 hover:bg-white/80 dark:hover:bg-gray-700/80 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
+                />
+              </div>
             </div>
           </div>
         </header>
@@ -334,10 +364,10 @@ export default function Home() {
             <div className="flex-1 flex items-center justify-center p-8 animate-fade-in-up">
               <div className="text-center max-w-2xl">
                 <div className="mb-8">
-                  <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 shadow-2xl mb-6 animate-pulse">
+                  <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-r from-gray-800 to-gray-600 dark:from-gray-200 dark:to-gray-400 shadow-2xl mb-6 animate-pulse">
                     <Zap className="h-10 w-10 text-white animate-bounce" />
                   </div>
-                  <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-600 to-purple-600 dark:from-gray-100 dark:via-blue-400 dark:to-purple-400 bg-clip-text text-transparent mb-4 animate-gradient">
+                  <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 via-gray-700 to-gray-600 dark:from-gray-100 dark:via-gray-300 dark:to-gray-400 bg-clip-text text-transparent mb-4 animate-gradient">
                     Hey there, I&apos;m Grok!
                   </h1>
                   <p className="text-lg text-gray-600 dark:text-gray-400 mb-8 animate-fade-in">
@@ -348,21 +378,21 @@ export default function Home() {
                 
                 {/* Quick Action Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                  <div className="p-6 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/30 dark:to-indigo-950/30 border border-blue-200 dark:border-blue-800/30 cursor-pointer hover:scale-105 transition-all duration-300 group hover:shadow-lg">
-                    <Globe className="h-8 w-8 text-blue-600 dark:text-blue-400 mb-3 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300" />
-                    <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">Web Search</h3>
+                  <div className="p-6 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900/30 dark:to-gray-800/30 border border-gray-200 dark:border-gray-700/30 cursor-pointer hover:scale-105 transition-all duration-300 group hover:shadow-lg">
+                    <Globe className="h-8 w-8 text-gray-600 dark:text-gray-400 mb-3 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300" />
+                    <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors">Web Search</h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Get real-time information from across the internet</p>
                   </div>
                   
-                  <div className="p-6 rounded-2xl bg-gradient-to-br from-purple-50 to-pink-100 dark:from-purple-950/30 dark:to-pink-950/30 border border-purple-200 dark:border-purple-800/30 cursor-pointer hover:scale-105 transition-all duration-300 group hover:shadow-lg">
-                    <TrendingUp className="h-8 w-8 text-purple-600 dark:text-purple-400 mb-3 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300" />
-                    <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">Crypto Data</h3>
+                  <div className="p-6 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900/30 dark:to-gray-800/30 border border-gray-200 dark:border-gray-700/30 cursor-pointer hover:scale-105 transition-all duration-300 group hover:shadow-lg">
+                    <TrendingUp className="h-8 w-8 text-gray-600 dark:text-gray-400 mb-3 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300" />
+                    <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors">Crypto Data</h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Live cryptocurrency prices and market analysis</p>
                   </div>
                   
-                  <div className="p-6 rounded-2xl bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-950/30 dark:to-emerald-950/30 border border-green-200 dark:border-green-800/30 cursor-pointer hover:scale-105 transition-all duration-300 group hover:shadow-lg">
-                    <Sparkles className="h-8 w-8 text-green-600 dark:text-green-400 mb-3 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300" />
-                    <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">AI Chat</h3>
+                  <div className="p-6 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900/30 dark:to-gray-800/30 border border-gray-200 dark:border-gray-700/30 cursor-pointer hover:scale-105 transition-all duration-300 group hover:shadow-lg">
+                    <Sparkles className="h-8 w-8 text-gray-600 dark:text-gray-400 mb-3 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300" />
+                    <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors">AI Chat</h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400">Intelligent conversations about any topic</p>
                   </div>
                 </div>
@@ -399,8 +429,8 @@ export default function Home() {
                       {/* Avatar */}
                       <div className={`flex-shrink-0 ${message.role === 'user' ? 'order-2' : 'order-1'}`}>
                         <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg ${message.role === 'user'
-                          ? 'bg-gradient-to-r from-blue-500 to-indigo-600'
-                          : 'bg-gradient-to-r from-purple-500 via-pink-500 to-red-500'
+                          ? 'bg-gradient-to-r from-gray-700 to-gray-600 dark:from-gray-300 dark:to-gray-400'
+                          : 'bg-gradient-to-r from-gray-800 to-gray-700 dark:from-gray-200 dark:to-gray-300'
                         }`}>
                           {message.role === 'user' ? (
                             <User className="h-5 w-5 text-white" />
@@ -414,7 +444,7 @@ export default function Home() {
                       <div className={`${message.role === 'user' ? 'order-1' : 'order-2'} flex-1`}>
                         <div className={`rounded-2xl px-6 py-4 shadow-sm border transition-all duration-200 hover:shadow-md ${
                           message.role === 'user'
-                            ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white border-blue-500/20'
+                            ? 'bg-gradient-to-r from-gray-700 to-gray-600 dark:from-gray-300 dark:to-gray-400 text-white dark:text-gray-900 border-gray-500/20 dark:border-gray-400/20'
                             : 'bg-white dark:bg-gray-900/50 text-gray-900 dark:text-gray-100 border-gray-200 dark:border-gray-700/50 backdrop-blur-sm'
                         }`}>
                           <p className="text-[15px] leading-relaxed">{message.content}</p>
@@ -438,14 +468,14 @@ export default function Home() {
                 {isLoading && (
                   <div className="flex justify-start">
                     <div className="flex space-x-4">
-                      <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 flex items-center justify-center shadow-lg">
+                      <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-gray-800 to-gray-700 dark:from-gray-200 dark:to-gray-300 flex items-center justify-center shadow-lg">
                         <Zap className="h-5 w-5 text-white" />
                       </div>
                       <div className="bg-white dark:bg-gray-900/50 rounded-2xl px-6 py-4 border border-gray-200 dark:border-gray-700/50 backdrop-blur-sm">
                         <div className="flex space-x-2">
-                          <div className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 animate-bounce [animation-delay:-0.3s]"></div>
-                          <div className="w-2 h-2 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 animate-bounce [animation-delay:-0.15s]"></div>
-                          <div className="w-2 h-2 rounded-full bg-gradient-to-r from-pink-500 to-red-500 animate-bounce"></div>
+                          <div className="w-2 h-2 rounded-full bg-gradient-to-r from-gray-600 to-gray-700 dark:from-gray-300 dark:to-gray-400 animate-bounce [animation-delay:-0.3s]"></div>
+                          <div className="w-2 h-2 rounded-full bg-gradient-to-r from-gray-700 to-gray-800 dark:from-gray-400 dark:to-gray-500 animate-bounce [animation-delay:-0.15s]"></div>
+                          <div className="w-2 h-2 rounded-full bg-gradient-to-r from-gray-800 to-gray-900 dark:from-gray-500 dark:to-gray-600 animate-bounce"></div>
                         </div>
                       </div>
                     </div>
@@ -458,85 +488,79 @@ export default function Home() {
           )}
         </div>
 
-        {/* Input Area */}
-        <div className="p-6 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-t border-gray-200/60 dark:border-gray-800/60">
-          <div className="max-w-4xl mx-auto">
-            <form onSubmit={handleSubmit} className="relative">
-              {/* Main Input Container */}
-              <div className="relative flex items-end space-x-4">
-                {/* Attachment button */}
-                <button
-                  type="button"
-                  className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-2xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 transition-all duration-200 hover:scale-105"
-                >
-                  <Paperclip className="h-5 w-5" />
-                </button>
-                
-                {/* Text input with enhanced design */}
-                <div className="flex-1 relative">
-                  <div className="relative bg-gray-50 dark:bg-gray-900/50 rounded-3xl border border-gray-200 dark:border-gray-700/50 focus-within:border-blue-500 dark:focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-500/20 transition-all duration-200 shadow-sm hover:shadow-md">
-                    <textarea
-                      ref={inputRef}
-                      value={inputText}
-                      onChange={(e) => setInputText(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      placeholder="Ask me anything... I can search the web, analyze crypto, or just chat!"
-                      className="w-full resize-none bg-transparent px-6 py-4 pr-20 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none text-[15px] leading-relaxed"
-                      rows={1}
-                      style={{ minHeight: '56px', maxHeight: '160px' }}
-                    />
+        {/* Enhanced Input Area - Premium UX - Compact */}
+        <div className="relative overflow-hidden">
+          {/* Content */}
+          <div className="relative z-10 p-3">
+            <div className="max-w-4xl mx-auto">
+              <form onSubmit={handleSubmit} className="relative">
+                {/* Enhanced Input Container with floating effect */}
+                <div className="relative p-0.5 rounded-2xl">
+                  <div className="flex items-end space-x-3 bg-white dark:bg-gray-900 rounded-2xl p-3">
+                    {/* Enhanced Attachment button */}
+                    <button
+                      type="button"
+                      className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-xl bg-gradient-to-br from-white/90 to-gray-50/90 dark:from-gray-700/90 dark:to-gray-800/90 backdrop-blur-md border border-white/30 dark:border-gray-600/30 hover:from-gray-50 hover:to-gray-100 dark:hover:from-gray-600 dark:hover:to-gray-700 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-all duration-300 hover:scale-110 hover:shadow-lg group"
+                    >
+                      <Paperclip className="h-4 w-4 group-hover:rotate-12 transition-transform duration-300" />
+                    </button>
                     
-                    {/* Quick action buttons inside input */}
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
-                      <button
-                        type="button"
-                        className="p-2 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-                        title="Search web"
-                      >
-                        <Globe className="h-4 w-4" />
-                      </button>
-                      <button
-                        type="button"
-                        className="p-2 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-                        title="Get crypto data"
-                      >
-                        <TrendingUp className="h-4 w-4" />
-                      </button>
+                    {/* Enhanced Text input */}
+                    <div className="flex-1 relative">
+                      <div className="relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                        <textarea
+                          ref={inputRef}
+                          value={inputText}
+                          onChange={(e) => setInputText(e.target.value)}
+                          onKeyDown={handleKeyDown}
+                          placeholder="Ask me anything... I can search the web, analyze crypto, or just chat!"
+                          className="w-full resize-none bg-transparent px-4 py-3 pr-20 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none text-sm leading-relaxed font-medium"
+                          rows={1}
+                          style={{ minHeight: '40px', maxHeight: '120px' }}
+                        />
+                        
+                        {/* Enhanced quick action buttons */}
+                        <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
+                          <button
+                            type="button"
+                            className="p-2 rounded-xl bg-white/60 dark:bg-gray-700/60 backdrop-blur-md border border-white/30 dark:border-gray-600/30 hover:bg-white/90 dark:hover:bg-gray-600/90 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-all duration-300 hover:scale-110 hover:shadow-lg group"
+                            title="Search web"
+                          >
+                            <Globe className="h-3.5 w-3.5 group-hover:rotate-12 transition-transform duration-300" />
+                          </button>
+                          <button
+                            type="button"
+                            className="p-2 rounded-xl bg-white/60 dark:bg-gray-700/60 backdrop-blur-md border border-white/30 dark:border-gray-600/30 hover:bg-white/90 dark:hover:bg-gray-600/90 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-all duration-300 hover:scale-110 hover:shadow-lg group"
+                            title="Get crypto data"
+                          >
+                            <TrendingUp className="h-3.5 w-3.5 group-hover:rotate-12 transition-transform duration-300" />
+                          </button>
+                        </div>
+                      </div>
                     </div>
+                    
+                    {/* Enhanced Voice input button */}
+                    <button
+                      type="button"
+                      className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-xl bg-gradient-to-br from-white/90 to-gray-50/90 dark:from-gray-700/90 dark:to-gray-800/90 backdrop-blur-md border border-white/30 dark:border-gray-600/30 hover:from-gray-50 hover:to-gray-100 dark:hover:from-gray-600 dark:hover:to-gray-700 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-all duration-300 hover:scale-110 hover:shadow-lg group"
+                    >
+                      <Mic className="h-4 w-4 group-hover:scale-110 transition-transform duration-300" />
+                    </button>
+                    
+                    {/* Enhanced Send button */}
+                    <button
+                      type="submit"
+                      disabled={!inputText.trim() || isLoading}
+                      className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-xl bg-gradient-to-br from-gray-800 to-gray-700 hover:from-gray-900 hover:to-gray-800 dark:from-gray-100 dark:to-gray-200 dark:hover:from-gray-50 dark:hover:to-gray-100 disabled:from-gray-300 disabled:to-gray-400 dark:disabled:from-gray-700 dark:disabled:to-gray-600 text-white dark:text-gray-900 transition-all duration-300 shadow-lg hover:shadow-xl disabled:shadow-lg transform hover:scale-110 disabled:scale-100 disabled:cursor-not-allowed border border-gray-600/20 dark:border-gray-300/20 backdrop-blur-md group"
+                    >
+                      <Send className="h-4 w-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-300" />
+                    </button>
                   </div>
                 </div>
                 
-                {/* Voice input button */}
-                <button
-                  type="button"
-                  className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-2xl bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 transition-all duration-200 hover:scale-105"
-                >
-                  <Mic className="h-5 w-5" />
-                </button>
-                
-                {/* Send button with enhanced design */}
-                <button
-                  type="submit"
-                  disabled={!inputText.trim() || isLoading}
-                  className="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:from-gray-300 disabled:to-gray-400 dark:disabled:from-gray-700 dark:disabled:to-gray-600 text-white transition-all duration-200 shadow-lg hover:shadow-xl disabled:shadow-none transform hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed"
-                >
-                  <Send className="h-5 w-5" />
-                </button>
-              </div>
-              
-              {/* Footer info */}
-              <div className="mt-4 flex items-center justify-between text-xs">
-                <div className="flex items-center space-x-4 text-gray-500 dark:text-gray-500">
-                  <span>Grok can make mistakes. Consider checking important information.</span>
-                </div>
-                <div className="flex items-center space-x-2 text-gray-400 dark:text-gray-600">
-                  <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs">⏎</kbd>
-                  <span>to send</span>
-                  <kbd className="px-2 py-1 bg-gray-100 dark:bg-gray-800 rounded text-xs">⇧⏎</kbd>
-                  <span>new line</span>
-                </div>
-              </div>
-            </form>
+
+              </form>
+            </div>
           </div>
         </div>
       </div>
