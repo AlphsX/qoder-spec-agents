@@ -1,11 +1,11 @@
-# Grok AI - Modern AI Assistant
+# Sync AI - Modern AI Assistant
 
-A beautifully designed modern AI assistant website inspired by Grok.com, featuring a sleek interface, advanced animations, and comprehensive functionality.
+A beautifully designed modern AI assistant website inspired by Sync.com, featuring a sleek interface, advanced animations, and comprehensive functionality.
 
 ## 🚀 Features
 
 ### ✨ Modern UX/UI Design
-- **Grok-inspired Interface**: Clean, minimal design similar to grok.com
+- **Sync-inspired Interface**: Clean, minimal design similar to sync.com
 - **Advanced Dark Mode**: HSL gray-1000 color scheme with smooth transitions
 - **Glassmorphism Effects**: Backdrop blur and translucent elements
 - **Gradient Backgrounds**: Beautiful animated gradients throughout the interface

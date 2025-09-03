@@ -20,7 +20,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Checkmate Spec Preview API",
-    description="Backend API for Checkmate Spec Preview - AI Agent inspired by Grok",
+    description="Backend API for Checkmate Spec Preview - AI Agent inspired by Sync",
     version="1.0.0",
     lifespan=lifespan
 )
@@ -42,7 +42,7 @@ app.include_router(external_apis_router, prefix="/api/external", tags=["external
 @app.get("/")
 async def root():
     return {
-        "message": "Checkmate Spec Preview API - AI Agent inspired by Grok", 
+        "message": "Checkmate Spec Preview API - AI Agent inspired by Sync", 
         "version": "1.0.0",
         "docs": "/docs",
         "external_apis": ["brave_search", "groq", "binance"]

@@ -18,7 +18,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="AI Agent API",
-    description="Backend API for AI Agent Website inspired by Grok",
+    description="Backend API for AI Agent Website inspired by Sync",
     version="1.0.0",
     lifespan=lifespan
 )
@@ -39,7 +39,7 @@ app.include_router(chat_router, prefix="/api/chat", tags=["chat"])
 @app.get("/")
 async def root():
     return {
-        "message": "AI Agent API - Inspired by Grok", 
+        "message": "AI Agent API - Inspired by Sync", 
         "version": "1.0.0",
         "docs": "/docs"
     }

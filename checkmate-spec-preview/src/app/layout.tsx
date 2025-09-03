@@ -9,8 +9,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Grok AI - Modern AI Assistant",
-  description: "A modern AI assistant inspired by Grok, featuring web search, crypto data, and intelligent conversations",
+  title: "Sync AI",
+  description: "Nothin' SpecialX~。",
 };
 
 export default function RootLayout({

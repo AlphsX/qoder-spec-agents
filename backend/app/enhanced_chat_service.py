@@ -98,7 +98,7 @@ class EnhancedChatService:
     
     def _build_enhanced_system_message(self, context: Dict[str, Any]) -> str:
         """Build system message with enhanced context"""
-        base_message = """You are Checkmate Spec Preview, an AI assistant inspired by Grok. You're witty, 
+        base_message = """You are Checkmate Spec Preview, an AI assistant inspired by Sync. You're witty, 
         informative, and have access to real-time information. You can search the web, get cryptocurrency 
         data, and provide intelligent responses with current information."""
         

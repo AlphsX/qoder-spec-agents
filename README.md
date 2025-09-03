@@ -2,7 +2,7 @@
 
 **An AI-Powered Specification Analysis Tool with Real-Time External Data Integration**
 
-Checkmate Spec Preview is a modern full-stack application that combines Next.js 15 frontend with a Python FastAPI backend, featuring multiple AI model integrations, real-time web search capabilities, cryptocurrency market data, and enhanced chat functionality inspired by Grok.
+Checkmate Spec Preview is a modern full-stack application that combines Next.js 15 frontend with a Python FastAPI backend, featuring multiple AI model integrations, real-time web search capabilities, cryptocurrency market data, and enhanced chat functionality inspired by Sync.
 
 ## 🏗️ Project Architecture
 
@@ -202,7 +202,7 @@ NEXT_PUBLIC_WS_URL=ws://localhost:8000
 - **System Preference**: Auto-detection with localStorage persistence
 
 ### Components
-- Modern chat interface inspired by Grok
+- Modern chat interface inspired by Sync
 - Real-time streaming responses
 - Loading states and typing indicators
 - Responsive design for all screen sizes

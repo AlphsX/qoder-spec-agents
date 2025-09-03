@@ -85,7 +85,7 @@ async def chat_with_ai(
     async def generate_response():
         # Mock streaming response
         response_chunks = [
-            "Hello! I'm an AI assistant inspired by Grok. ",
+            "Hello! I'm an AI assistant inspired by Sync. ",
             "I can help you with various tasks including: ",
             "web search, cryptocurrency data, ",
             "and general conversation. ",

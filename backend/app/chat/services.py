@@ -21,7 +21,7 @@ class ChatService:
         
         # Add system message and user message
         messages = [
-            {"role": "system", "content": "You are a helpful AI assistant inspired by Grok. You're witty, informative, and can access real-time information."}
+            {"role": "system", "content": "You are a helpful AI assistant inspired by Sync. You're witty, informative, and can access real-time information."}
         ]
         
         # Add conversation history
