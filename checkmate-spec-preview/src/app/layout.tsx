@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata } from "next"; // cd /Users/linkalphx/Sync-AI/checkmate-spec-preview && npm run dev
 import { Inter } from "next/font/google";
 import "./globals.css";
 

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Send, Sparkles, Globe, TrendingUp, User, Bot, Mic, Paperclip, Zap, Activity } from 'lucide-react';
 import { useChat, useExternalData, useAppCapabilities } from '@/hooks';
+import { AIModelDropdown } from '@/components/magicui/ai-model-dropdown';
 
 interface Message {
   id: string;
@@ -10,6 +11,15 @@ interface Message {
   role: 'user' | 'assistant';
   timestamp: Date;
   model?: string;
+}
+
+interface AIModel {
+  id: string;
+  name: string;
+  provider: string;
+  description: string;
+  features?: string[];
+  recommended?: boolean;
 }
 
 export default function EnhancedHome() {
@@ -58,7 +68,7 @@ export default function EnhancedHome() {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit(e as any);
+      handleSubmit(e as React.FormEvent);
     }
   };
 
@@ -116,17 +126,10 @@ export default function EnhancedHome() {
                 </div>
               )}
               
-              <select 
-                value={selectedModel} 
-                onChange={(e) => setSelectedModel(e.target.value)}
-                className="rounded-lg bg-gray-800 border border-gray-600 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
-              >
-                {availableModels.map((model) => (
-                  <option key={model.id} value={model.id}>
-                    {model.name} {model.recommended ? '⭐' : ''}
-                  </option>
-                ))}
-              </select>
+              <AIModelDropdown 
+                selectedModel={selectedModel}
+                onModelSelect={setSelectedModel}
+              />
             </div>
           </div>
 

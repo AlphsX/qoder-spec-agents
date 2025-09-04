@@ -2,18 +2,18 @@
 
 **An AI-Powered Specification Analysis Tool with Real-Time External Data Integration**
 
-Checkmate Spec Preview is a modern full-stack application that combines Next.js 15 frontend with a Python FastAPI backend, featuring multiple AI model integrations, real-time web search capabilities, cryptocurrency market data, and enhanced chat functionality inspired by Sync.
+Checkmate Spec Preview is a modern full-stack application that combines Next.js 15 frontend with a Python FastAPI backend, featuring multiple AI model integrations, real-time web search capabilities, cryptocurrency market data, and enhanced chat functionality.
 
 ## 🏗️ Project Architecture
 
 ```
-/Users/linkalphx/Claude/
+/Users/linkalphx/Sync-AI/
 ├── checkmate-spec-preview/     # Next.js 15 Frontend
 │   ├── src/
-│   │   ├── app/                # App Router pages
+│   │   ├── app/                # App Router pages and routes
+│   │   ├── components/
+│   │   │   └── magicui/       # Animated UI components
 │   │   ├── hooks/              # Custom React hooks
-│   │   ├── components/         # Custom UI components
-│   │   │   └── magicui/       # Magic UI components
 │   │   └── lib/                # API client utilities
 │   ├── package.json
 │   └── tailwind.config.ts      # TailwindCSS 4.0 config
@@ -21,11 +21,11 @@ Checkmate Spec Preview is a modern full-stack application that combines Next.js 
 │   ├── app/
 │   │   ├── auth/               # Authentication system
 │   │   ├── chat/               # Enhanced chat service
-│   │   ├── external_apis/      # API integrations
-│   │   ├── main.py             # FastAPI application
-│   │   └── config.py           # Configuration
+│   │   ├── external_apis/      # API integrations (Binance, Brave Search)
+│   │   ├── main.py             # FastAPI application entry point
+│   │   └── config.py           # Configuration management
 │   └── requirements.txt
-└── SETUP_COMPLETE.md           # Setup documentation
+└── README.md                   # This file
 ```
 
 ## ✨ Key Features
@@ -44,9 +44,10 @@ Checkmate Spec Preview is a modern full-stack application that combines Next.js 
 
 ### 🎨 Modern Frontend
 - **Next.js 15**: Latest features with App Router
+- **React 19**: Modern React features
 - **TypeScript**: Full type safety
 - **TailwindCSS 4.0**: Modern utility-first styling
-- **Dark Mode**: HSL gray-1000 based theme system with animated toggle
+- **Dark Mode**: Animated theme toggler with smooth transitions
 - **Responsive Design**: Mobile-friendly interface
 - **Real-Time UI**: WebSocket integration for live updates
 
@@ -202,12 +203,12 @@ NEXT_PUBLIC_WS_URL=ws://localhost:8000
 - **System Preference**: Auto-detection with localStorage persistence
 
 ### Components
-- Modern chat interface inspired by Sync
+- Modern chat interface with animated theme toggler
 - Real-time streaming responses
 - Loading states and typing indicators
 - Responsive design for all screen sizes
 - Accessible color contrast ratios
-- Animated theme toggler with smooth transitions
+- Animated UI components from Magic UI
 
 ## 🧪 Testing & Validation
 
@@ -223,12 +224,6 @@ npm run type-check    # Type checking
 pytest                # Run test suite
 pytest --cov         # Coverage report
 mypy app/            # Type checking
-```
-
-### Integration Testing
-```bash
-# Run validation script
-./test_validation.sh
 ```
 
 ## 🚀 Deployment

@@ -1,9 +1,10 @@
-'use client'; // cd /Users/linkalphx/Sync-AI/checkmate-spec-preview && npm run dev
+'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Send, Sparkles, Globe, TrendingUp, User, Bot, Mic, Paperclip, Plus, Settings, MoreHorizontal, Zap, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Send, Sparkles, Globe, TrendingUp, User, Bot, Mic, Plus, Settings, MoreHorizontal, Zap, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useDarkMode } from '@/hooks';
 import { AnimatedThemeToggler } from "@/components/magicui";
+import { AIModelDropdown } from "@/components/magicui/ai-model-dropdown";
 
 interface Message {
   id: string;
@@ -18,6 +19,8 @@ interface AIModel {
   name: string;
   provider: string;
   description: string;
+  features?: string[];
+  recommended?: boolean;
 }
 
 export default function Home() {
@@ -27,16 +30,20 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isDesktopSidebarCollapsed, setIsDesktopSidebarCollapsed] = useState(false);
-  const [selectedModel, setSelectedModel] = useState('groq-llama-3.1-70b');
+  const [selectedModel, setSelectedModel] = useState('openai/gpt-oss-120b');
   const [showWelcome, setShowWelcome] = useState(true);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Added for dropdown functionality
   const [availableModels, setAvailableModels] = useState<AIModel[]>([
-    { id: 'gpt-4', name: 'GPT-4', provider: 'OpenAI', description: 'Most capable GPT-4 model' },
-    { id: 'groq-llama-3.1-70b', name: 'Llama 3.1 70B', provider: 'Groq', description: 'Ultra-fast inference' },
-    { id: 'claude-3-5-sonnet-20241022', name: 'Claude 3.5 Sonnet', provider: 'Anthropic', description: 'Latest Claude model' }
+    { id: 'openai/gpt-oss-120b', name: 'GPT-OSS-120B', provider: 'OpenAI', description: 'Open source 120B parameter model' },
+    { id: 'meta-llama/llama-4-maverick-17b-128e-instruct', name: 'Llama-4 Maverick 17B', provider: 'Meta', description: '17B parameter model with 128 experts' },
+    { id: 'deepseek-r1-distill-llama-70b', name: 'DeepSeek R1 Distill Llama 70B', provider: 'DeepSeek', description: 'Distilled version of DeepSeek R1 with 70B parameters' },
+    { id: 'qwen/qwen3-32b', name: 'Qwen3 32B', provider: 'Qwen', description: 'Latest Qwen model with 32B parameters' },
+    { id: 'moonshotai/kimi-k2-instruct', name: 'Kimi K2 Instruct', provider: 'Moonshot AI', description: 'Kimi K2 instruction-following model' }
   ]);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null); // Added for dropdown click outside detection
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -85,6 +92,32 @@ export default function Home() {
     }
   };
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleSearchWeb = () => {
+    setInputText('Search the web for latest information');
+    setIsDropdownOpen(false);
+    inputRef.current?.focus();
+  };
+
+  const handleGetCryptoData = () => {
+    setInputText('Get current cryptocurrency market data');
+    setIsDropdownOpen(false);
+    inputRef.current?.focus();
+  };
+
   return (
     <div className="flex h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-1000 dark:via-gray-950 dark:to-gray-900 text-gray-900 dark:text-gray-50 transition-all duration-500">
       {/* Mobile Sidebar Overlay */}
@@ -106,15 +139,15 @@ export default function Home() {
                 <div className="flex items-center space-x-3">
                   <div className="relative">
                     <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 shadow-lg">
-                      <Zap className="h-5 w-5 text-white" />
+                      <Zap className="h-5 w-5 text-white mx-auto" />
                     </div>
                   </div>
                 </div>
                 <button 
                   onClick={() => setIsSidebarOpen(false)}
-                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center justify-center"
                 >
-                  <Plus className="h-4 w-4 rotate-45" />
+                  <Plus className="h-4 w-4 rotate-45 mx-auto" />
                 </button>
               </div>
             </div>
@@ -122,7 +155,7 @@ export default function Home() {
             {/* Mobile New Chat Button */}
             <div className="p-4 pt-2 pb-2">
               <button className="w-full flex items-center space-x-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800 text-white rounded-xl py-2 px-3 text-sm font-medium transition-all duration-200 shadow hover:shadow-md transform hover:scale-105">
-                <Plus className="h-5 w-5" />
+                <Plus className="h-5 w-5 flex-shrink-0" />
                 <span>New Chat</span>
               </button>
             </div>
@@ -131,21 +164,21 @@ export default function Home() {
             <div className="flex-1 overflow-y-auto px-4 pt-2 pb-4">
               <div className="space-y-2">
                 <button className="w-full h-10 flex items-center space-x-2 bg-white/80 dark:bg-gray-800/40 hover:bg-gray-100 dark:hover:bg-gray-700/40 text-gray-800 dark:text-gray-200 rounded-xl py-2 px-3 text-sm font-medium transition-all duration-200 shadow-sm hover:shadow border border-gray-200/40 dark:border-gray-700/40" onClick={(e) => e.stopPropagation()}>
-                  <Globe className="h-4 w-4 text-blue-500" />
+                  <Globe className="h-4 w-4 text-blue-500 flex-shrink-0" />
                   <div className="text-left">
                     <p className="text-sm font-medium truncate">Web search capabilities</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">2 hours ago</p>
                   </div>
                 </button>
                 <button className="w-full h-10 flex items-center space-x-2 bg-white/80 dark:bg-gray-800/40 hover:bg-gray-100 dark:hover:bg-gray-700/40 text-gray-800 dark:text-gray-200 rounded-xl py-2 px-3 text-sm font-medium transition-all duration-200 shadow-sm hover:shadow border border-gray-200/40 dark:border-gray-700/40" onClick={(e) => e.stopPropagation()}>
-                  <TrendingUp className="h-4 w-4 text-green-500" />
+                  <TrendingUp className="h-4 w-4 text-green-500 flex-shrink-0" />
                   <div className="text-left">
                     <p className="text-sm font-medium truncate">Crypto market analysis</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">Yesterday</p>
                   </div>
                 </button>
                 <button className="w-full h-10 flex items-center space-x-2 bg-white/80 dark:bg-gray-800/40 hover:bg-gray-100 dark:hover:bg-gray-700/40 text-gray-800 dark:text-gray-200 rounded-xl py-2 px-3 text-sm font-medium transition-all duration-200 shadow-sm hover:shadow border border-gray-200/40 dark:border-gray-700/40" onClick={(e) => e.stopPropagation()}>
-                  <Sparkles className="h-4 w-4 text-purple-500" />
+                  <Sparkles className="h-4 w-4 text-purple-500 flex-shrink-0" />
                   <div className="text-left">
                     <p className="text-sm font-medium truncate">General AI conversation</p>
                     <p className="text-xs text-gray-500 dark:text-gray-400">2 days ago</p>
@@ -160,7 +193,7 @@ export default function Home() {
                 <div className="flex items-center space-x-2">
                   <div className="relative">
                     <div className="h-8 w-8 bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 rounded-full flex items-center justify-center">
-                      <User className="h-4 w-4 text-white" />
+                      <User className="h-5 w-5 text-white mx-auto" />
                     </div>
                     <div className="absolute bottom-0 right-0 h-2.5 w-2.5 bg-green-500 dark:bg-green-400 rounded-full border-2 border-white dark:border-gray-900"></div>
                   </div>
@@ -170,17 +203,17 @@ export default function Home() {
                 <AnimatedThemeToggler 
                   isDarkMode={isDarkMode}
                   toggleDarkMode={toggleDarkMode}
-                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center justify-center"
                 />
                 <button 
-                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center justify-center"
                   onClick={(e) => {
                     e.stopPropagation();
                     setIsSidebarOpen(false);
                   }}
                   title="Hide sidebar"
                 >
-                  <ChevronLeft className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                  <ChevronLeft className="h-4 w-4 text-gray-600 dark:text-gray-400 mx-auto" />
                 </button>
               </div>
               </div>
@@ -201,7 +234,7 @@ export default function Home() {
             <div className={`flex items-center w-full ${isDesktopSidebarCollapsed ? 'justify-center' : 'justify-start'}`}>
               <div className="relative">
                 <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 shadow-md">
-                  <Zap className="h-5 w-5 text-white" />
+                  <Zap className="h-5 w-5 text-white mx-auto" />
                 </div>
               </div>
             </div>
@@ -216,14 +249,14 @@ export default function Home() {
               title="New Chat"
               onClick={(e) => e.stopPropagation()}
             >
-              <Plus className="h-5 w-5" />
+              <Plus className="h-5 w-5 mx-auto" />
             </button>
           ) : (
             <button 
               className="w-full flex items-center space-x-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800 text-white rounded-xl py-3 px-4 text-sm font-medium transition-all duration-200 shadow hover:shadow-md transform hover:scale-[1.02]"
               onClick={(e) => e.stopPropagation()}
             >
-              <Plus className="h-5 w-5" />
+              <Plus className="h-5 w-5 flex-shrink-0" />
               <span className="font-semibold">New Chat</span>
             </button>
           )}
@@ -237,7 +270,7 @@ export default function Home() {
                 className="w-full h-12 flex items-center space-x-3 bg-white/80 dark:bg-gray-800/40 hover:bg-gray-100 dark:hover:bg-gray-700/40 text-gray-800 dark:text-gray-200 rounded-xl py-3 px-4 text-sm font-medium transition-all duration-200 shadow-sm hover:shadow border border-gray-200/40 dark:border-gray-700/40"
                 onClick={(e) => e.stopPropagation()}
               >
-                <Globe className="h-5 w-5 text-blue-500" />
+                <Globe className="h-5 w-5 text-blue-500 flex-shrink-0" />
                 <div className="text-left">
                   <p className="font-medium truncate">Web search capabilities</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">2 hours ago</p>
@@ -247,7 +280,7 @@ export default function Home() {
                 className="w-full h-12 flex items-center space-x-3 bg-white/80 dark:bg-gray-800/40 hover:bg-gray-100 dark:hover:bg-gray-700/40 text-gray-800 dark:text-gray-200 rounded-xl py-3 px-4 text-sm font-medium transition-all duration-200 shadow-sm hover:shadow border border-gray-200/40 dark:border-gray-700/40"
                 onClick={(e) => e.stopPropagation()}
               >
-                <TrendingUp className="h-5 w-5 text-green-500" />
+                <TrendingUp className="h-5 w-5 text-green-500 flex-shrink-0" />
                 <div className="text-left">
                   <p className="font-medium truncate">Crypto market analysis</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">Yesterday</p>
@@ -257,7 +290,7 @@ export default function Home() {
                 className="w-full h-12 flex items-center space-x-3 bg-white/80 dark:bg-gray-800/40 hover:bg-gray-100 dark:hover:bg-gray-700/40 text-gray-800 dark:text-gray-200 rounded-xl py-3 px-4 text-sm font-medium transition-all duration-200 shadow-sm hover:shadow border border-gray-200/40 dark:border-gray-700/40"
                 onClick={(e) => e.stopPropagation()}
               >
-                <Sparkles className="h-5 w-5 text-purple-500" />
+                <Sparkles className="h-5 w-5 text-purple-500 flex-shrink-0" />
                 <div className="text-left">
                   <p className="font-medium truncate">General AI conversation</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">2 days ago</p>
@@ -271,21 +304,21 @@ export default function Home() {
                 title="Web search capabilities" 
                 onClick={(e) => e.stopPropagation()}
               >
-                <Globe className="h-5 w-5 text-blue-500" />
+                <Globe className="h-5 w-5 text-blue-500 mx-auto" />
               </button>
               <button 
                 className="w-10 h-10 rounded-xl bg-white/80 dark:bg-gray-800/40 hover:bg-gray-100 dark:hover:bg-gray-700/40 text-gray-800 dark:text-gray-200 flex items-center justify-center shadow-sm hover:shadow border border-gray-200/40 dark:border-gray-700/40 transition-all duration-200 transform hover:scale-105"
                 title="Crypto market analysis" 
                 onClick={(e) => e.stopPropagation()}
               >
-                <TrendingUp className="h-5 w-5 text-green-500" />
+                <TrendingUp className="h-5 w-5 text-green-500 mx-auto" />
               </button>
               <button 
                 className="w-10 h-10 rounded-xl bg-white/80 dark:bg-gray-800/40 hover:bg-gray-100 dark:hover:bg-gray-700/40 text-gray-800 dark:text-gray-200 flex items-center justify-center shadow-sm hover:shadow border border-gray-200/40 dark:border-gray-700/40 transition-all duration-200 transform hover:scale-105"
                 title="General AI conversation" 
                 onClick={(e) => e.stopPropagation()}
               >
-                <Sparkles className="h-5 w-5 text-purple-500" />
+                <Sparkles className="h-5 w-5 text-purple-500 mx-auto" />
               </button>
             </div>
           )}
@@ -298,7 +331,7 @@ export default function Home() {
               <div className="flex items-center space-x-3">
                 <div className="relative">
                   <div className="h-9 w-9 bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 rounded-full flex items-center justify-center">
-                    <User className="h-5 w-5 text-white" />
+                    <User className="h-6 w-6 text-white mx-auto" />
                   </div>
                   <div className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 dark:bg-green-400 rounded-full border-2 border-white dark:border-gray-900"></div>
                 </div>
@@ -309,14 +342,14 @@ export default function Home() {
               </div>
               <div className="flex items-center space-x-1">
                 <button 
-                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800/60 transition-colors" 
+                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800/60 transition-colors flex items-center justify-center" 
                   onClick={(e) => {e.stopPropagation(); setIsDesktopSidebarCollapsed(!isDesktopSidebarCollapsed);}}
                   title={isDesktopSidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'}
                 >
                   {isDesktopSidebarCollapsed ? (
-                    <ChevronRight className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                    <ChevronRight className="h-5 w-5 text-gray-600 dark:text-gray-400 mx-auto" />
                   ) : (
-                    <ChevronLeft className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                    <ChevronLeft className="h-5 w-5 text-gray-600 dark:text-gray-400 mx-auto" />
                   )}
                 </button>
               </div>
@@ -325,20 +358,20 @@ export default function Home() {
             <div className="flex flex-col items-center space-y-3">
               <div className="relative" title="User">
                 <div className="h-9 w-9 bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 rounded-full flex items-center justify-center">
-                  <User className="h-5 w-5 text-white" />
+                  <User className="h-6 w-6 text-white mx-auto" />
                 </div>
                 <div className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 dark:bg-green-400 rounded-full border-2 border-white dark:border-gray-900"></div>
               </div>
               <div className="flex flex-col items-center space-y-1">
                 <button 
-                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800/60 transition-colors" 
+                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800/60 transition-colors flex items-center justify-center" 
                   onClick={(e) => {e.stopPropagation(); setIsDesktopSidebarCollapsed(!isDesktopSidebarCollapsed);}}
                   title={isDesktopSidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'}
                 >
                   {isDesktopSidebarCollapsed ? (
-                    <ChevronRight className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                    <ChevronRight className="h-5 w-5 text-gray-600 dark:text-gray-400 mx-auto" />
                   ) : (
-                    <ChevronLeft className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                    <ChevronLeft className="h-5 w-5 text-gray-600 dark:text-gray-400 mx-auto" />
                   )}
                 </button>
               </div>
@@ -357,34 +390,27 @@ export default function Home() {
               <div className="flex items-center space-x-4">
                 {/* Mobile Menu Toggle */}
                 <button 
-                  className="md:hidden p-2.5 rounded-2xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-md border border-white/20 dark:border-gray-700/30 hover:bg-white/80 dark:hover:bg-gray-700/80 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
+                  className="md:hidden p-2.5 rounded-2xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-md border border-white/20 dark:border-gray-700/30 hover:bg-white/80 dark:hover:bg-gray-700/80 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 flex items-center justify-center"
                   onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                   title={isSidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
                 >
                   {isSidebarOpen ? (
-                    <ChevronLeft className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                    <ChevronLeft className="h-5 w-5 text-gray-700 dark:text-gray-300 mx-auto" />
                   ) : (
-                    <ChevronRight className="h-5 w-5 text-gray-700 dark:text-gray-300" />
+                    <ChevronRight className="h-5 w-5 text-gray-700 dark:text-gray-300 mx-auto" />
                   )}
                 </button>
               </div>
               
               <div className="flex items-center space-x-2">
-                <select 
-                  value={selectedModel} 
-                  onChange={(e) => setSelectedModel(e.target.value)}
-                  className="rounded-2xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-gray-200/40 dark:border-gray-700/40 px-4 py-2 text-sm font-medium focus:border-blue-500/50 dark:focus:border-blue-400/50 focus:outline-none focus:ring-2 focus:ring-blue-500/20 dark:focus:ring-blue-400/20 transition-all duration-200 shadow hover:shadow-md text-gray-700 dark:text-gray-300"
-                >
-                  {availableModels.map((model) => (
-                    <option key={model.id} value={model.id} className="bg-white dark:bg-gray-800">
-                      {model.name}
-                    </option>
-                  ))}
-                </select>
+                <AIModelDropdown 
+                  selectedModel={selectedModel}
+                  onModelSelect={setSelectedModel}
+                />
                 <AnimatedThemeToggler 
                   isDarkMode={isDarkMode}
                   toggleDarkMode={toggleDarkMode}
-                  className="p-2 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-gray-200/40 dark:border-gray-700/40 hover:bg-white/90 dark:hover:bg-gray-700/90 transition-all duration-200 shadow hover:shadow-md"
+                  className="p-2 rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-gray-200/40 dark:border-gray-700/40 hover:bg-white/90 dark:hover:bg-gray-700/90 transition-all duration-200 shadow hover:shadow-md flex items-center justify-center"
                 />
               </div>
             </div>
@@ -399,7 +425,7 @@ export default function Home() {
               <div className="text-center max-w-2xl">
                 <div className="mb-8">
                   <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 shadow-xl mb-6">
-                    <Zap className="h-10 w-10 text-white" />
+                    <Zap className="h-10 w-10 text-white mx-auto" />
                   </div>
                   <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 via-gray-700 to-gray-600 dark:from-gray-100 dark:via-gray-300 dark:to-gray-400 bg-clip-text text-transparent mb-4">
                     Hey there, I&apos;m Sync!
@@ -412,22 +438,22 @@ export default function Home() {
                 
                 {/* Quick Action Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-                  <div className="p-6 rounded-2xl bg-white/80 dark:bg-gray-800/40 border border-gray-200/40 dark:border-gray-700/40 cursor-pointer hover:scale-[1.02] transition-all duration-200 group hover:shadow-md">
-                    <Globe className="h-8 w-8 text-blue-500 mb-3 group-hover:scale-110 group-hover:rotate-6 transition-all duration-200" />
-                    <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors">Web Search</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Get real-time information from across the internet</p>
+                  <div className="p-6 rounded-2xl bg-white/80 dark:bg-gray-800/40 border border-gray-200/40 dark:border-gray-700/40 cursor-pointer hover:scale-[1.02] transition-all duration-200 group hover:shadow-md flex flex-col items-center">
+                    <Globe className="h-8 w-8 text-blue-500 mb-3 group-hover:scale-110 group-hover:rotate-6 transition-all duration-200 mx-auto" />
+                    <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors text-center">Web Search</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 text-center">Get real-time information from across the internet</p>
                   </div>
                   
-                  <div className="p-6 rounded-2xl bg-white/80 dark:bg-gray-800/40 border border-gray-200/40 dark:border-gray-700/40 cursor-pointer hover:scale-[1.02] transition-all duration-200 group hover:shadow-md">
-                    <TrendingUp className="h-8 w-8 text-green-500 mb-3 group-hover:scale-110 group-hover:rotate-6 transition-all duration-200" />
-                    <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors">Crypto Data</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Live cryptocurrency prices and market analysis</p>
+                  <div className="p-6 rounded-2xl bg-white/80 dark:bg-gray-800/40 border border-gray-200/40 dark:border-gray-700/40 cursor-pointer hover:scale-[1.02] transition-all duration-200 group hover:shadow-md flex flex-col items-center">
+                    <TrendingUp className="h-8 w-8 text-green-500 mb-3 group-hover:scale-110 group-hover:rotate-6 transition-all duration-200 mx-auto" />
+                    <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors text-center">Crypto Data</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 text-center">Live cryptocurrency prices and market analysis</p>
                   </div>
                   
-                  <div className="p-6 rounded-2xl bg-white/80 dark:bg-gray-800/40 border border-gray-200/40 dark:border-gray-700/40 cursor-pointer hover:scale-[1.02] transition-all duration-200 group hover:shadow-md">
-                    <Sparkles className="h-8 w-8 text-purple-500 mb-3 group-hover:scale-110 group-hover:rotate-6 transition-all duration-200" />
-                    <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors">AI Chat</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">Intelligent conversations about any topic</p>
+                  <div className="p-6 rounded-2xl bg-white/80 dark:bg-gray-800/40 border border-gray-200/40 dark:border-gray-700/40 cursor-pointer hover:scale-[1.02] transition-all duration-200 group hover:shadow-md flex flex-col items-center">
+                    <Sparkles className="h-8 w-8 text-purple-500 mb-3 group-hover:scale-110 group-hover:rotate-6 transition-all duration-200 mx-auto" />
+                    <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors text-center">AI Chat</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 text-center">Intelligent conversations about any topic</p>
                   </div>
                 </div>
                 
@@ -462,14 +488,14 @@ export default function Home() {
                     <div className={`flex max-w-[85%] space-x-4 ${message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
                       {/* Avatar */}
                       <div className={`flex-shrink-0 ${message.role === 'user' ? 'order-2' : 'order-1'}`}>
-                        <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg ${message.role === 'user'
-                          ? 'bg-gradient-to-r from-gray-700 to-gray-600 dark:from-gray-300 dark:to-gray-400'
-                          : 'bg-gradient-to-r from-gray-800 to-gray-700 dark:from-gray-200 dark:to-gray-300'
+                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg ${message.role === 'user'
+                          ? ''
+                          : ''
                         }`}>
                           {message.role === 'user' ? (
-                            <User className="h-5 w-5 text-white" />
+                            <div className="w-6 h-6"></div>
                           ) : (
-                            <Zap className="h-5 w-5 text-white" />
+                            <div className="w-6 h-6"></div>
                           )}
                         </div>
                       </div>
@@ -502,8 +528,8 @@ export default function Home() {
                 {isLoading && (
                   <div className="flex justify-start">
                     <div className="flex space-x-4">
-                      <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-gray-800 to-gray-700 dark:from-gray-200 dark:to-gray-300 flex items-center justify-center shadow-lg">
-                        <Zap className="h-5 w-5 text-white" />
+                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg">
+                        <div className="w-6 h-6"></div>
                       </div>
                       <div className="bg-white dark:bg-gray-800/60 rounded-2xl px-6 py-4 border border-gray-200/40 dark:border-gray-700/40">
                         <div className="flex space-x-2">
@@ -526,72 +552,87 @@ export default function Home() {
         <div className="relative overflow-hidden">
           {/* Content */}
           <div className="relative z-10 p-3">
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-3xl mx-auto">
               <form onSubmit={handleSubmit} className="relative">
-                {/* Enhanced Input Container with floating effect */}
-                <div className="relative p-0.5 rounded-2xl">
-                  <div className="flex items-end space-x-2 bg-white dark:bg-gray-800 rounded-2xl p-2 border border-gray-200/40 dark:border-gray-700/40">
-                    {/* Enhanced Attachment button */}
-                    <button
-                      type="button"
-                      className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-xl bg-white/80 dark:bg-gray-700/80 border border-gray-200/40 dark:border-gray-600/40 hover:bg-white/90 dark:hover:bg-gray-600/90 text-gray-600 dark:text-gray-400 transition-all duration-200 hover:scale-105 group"
-                    >
-                      <Paperclip className="h-4 w-4 group-hover:rotate-6 transition-transform duration-200" />
-                    </button>
-                    
-                    {/* Enhanced Text input */}
-                    <div className="flex-1 relative">
-                      <div className="relative bg-white dark:bg-gray-800 rounded-2xl border border-gray-200/40 dark:border-gray-700/40 overflow-hidden">
-                        <textarea
-                          ref={inputRef}
-                          value={inputText}
-                          onChange={(e) => setInputText(e.target.value)}
-                          onKeyDown={handleKeyDown}
-                          placeholder="Ask me anything... I can search the web, analyze crypto, or just chat!"
-                          className="w-full resize-none bg-transparent px-4 py-3 pr-20 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none text-sm leading-relaxed font-medium"
-                          rows={1}
-                          style={{ minHeight: '40px', maxHeight: '120px' }}
-                        />
+                {/* Enhanced Input Container with floating effect - Removed outer container */}
+                <div className="flex items-end space-x-2 bg-transparent rounded-3xl p-2">
+                  {/* Enhanced Text input */}
+                  <div className="flex-1 relative">
+                    <div className="relative bg-transparent rounded-3xl overflow-hidden border border-gray-900/20 dark:border-gray-100/20">
+                      {/* Plus button with dropdown for search web and crypto data - moved inside the input container */}
+                      <div className="absolute left-2 bottom-2 flex-shrink-0 w-10 h-10" ref={dropdownRef}>
+                        <button
+                          type="button"
+                          className="flex-shrink-0 w-10 h-10 flex items-center justify-center"
+                          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                        >
+                          <Plus className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                        </button>
+                        {/* Dropdown menu for search options */}
+                        {isDropdownOpen && (
+                          <div className="absolute bottom-full left-0 mb-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200/40 dark:border-gray-700/40 py-2 z-10">
+                            <button
+                              type="button"
+                              className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
+                              onClick={handleSearchWeb}
+                            >
+                              <Globe className="h-4 w-4 mr-2" />
+                              Search web
+                            </button>
+                            <button
+                              type="button"
+                              className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
+                              onClick={handleGetCryptoData}
+                            >
+                              <TrendingUp className="h-4 w-4 mr-2" />
+                              Get crypto data
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <textarea
+                        ref={inputRef}
+                        value={inputText}
+                        onChange={(e) => setInputText(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder="Ask me anything... I can search the web, analyze crypto, or just chat!"
+                        className="w-full resize-none bg-transparent px-14 py-3 pr-14 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none text-sm leading-relaxed font-medium"
+                        rows={1}
+                        style={{ minHeight: '40px', maxHeight: '120px' }}
+                      />
+                      
+                      {/* Voice input and Send buttons - moved inside the input container on the right side */}
+                      <div className="absolute right-2 bottom-2 flex items-center space-x-1">
+                        {/* Enhanced Voice input button */}
+                        <button
+                          type="button"
+                          className="flex-shrink-0 w-9 h-9 flex items-center justify-center"
+                        >
+                          <Mic className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                        </button>
                         
-                        {/* Enhanced quick action buttons */}
-                        <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-1">
-                          <button
-                            type="button"
-                            className="p-2 rounded-xl bg-white/80 dark:bg-gray-700/80 border border-gray-200/40 dark:border-gray-600/40 hover:bg-white/90 dark:hover:bg-gray-600/90 text-gray-500 dark:text-gray-400 transition-all duration-200 hover:scale-105 group"
-                            title="Search web"
+                        {/* Enhanced Send button with upward arrow icon */}
+                        <button
+                          type="submit"
+                          disabled={!inputText.trim() || isLoading}
+                          className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 dark:from-blue-500 dark:to-blue-600 disabled:from-gray-100 disabled:to-gray-100 dark:disabled:from-gray-800 dark:disabled:to-gray-800 text-white transition-all duration-200 shadow hover:shadow-md disabled:shadow transform hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed border border-gray-900/20 dark:border-gray-100/20 group"
+                        >
+                          <svg 
+                            width="20" 
+                            height="20" 
+                            viewBox="0 0 20 20" 
+                            fill="currentColor" 
+                            xmlns="http://www.w3.org/2000/svg" 
+                            className={`h-5 w-5 group-hover:-translate-y-0.5 transition-transform duration-200 mx-auto ${(!inputText.trim() || isLoading) ? "text-gray-900 dark:text-gray-100" : "text-white"}`}
                           >
-                            <Globe className="h-3.5 w-3.5 group-hover:rotate-6 transition-transform duration-200" />
-                          </button>
-                          <button
-                            type="button"
-                            className="p-2 rounded-xl bg-white/80 dark:bg-gray-700/80 border border-gray-200/40 dark:border-gray-600/40 hover:bg-white/90 dark:hover:bg-gray-600/90 text-gray-500 dark:text-gray-400 transition-all duration-200 hover:scale-105 group"
-                            title="Get crypto data"
-                          >
-                            <TrendingUp className="h-3.5 w-3.5 group-hover:rotate-6 transition-transform duration-200" />
-                          </button>
-                        </div>
+                            <path d="M8.99992 16V6.41407L5.70696 9.70704C5.31643 10.0976 4.68342 10.0976 4.29289 9.70704C3.90237 9.31652 3.90237 8.6835 4.29289 8.29298L9.29289 3.29298L9.36907 3.22462C9.76184 2.90427 10.3408 2.92686 10.707 3.29298L15.707 8.29298L15.7753 8.36915C16.0957 8.76192 16.0731 9.34092 15.707 9.70704C15.3408 10.0732 14.7618 10.0958 14.3691 9.7754L14.2929 9.70704L10.9999 6.41407V16C10.9999 16.5523 10.5522 17 9.99992 17C9.44764 17 8.99992 16.5523 8.99992 16Z" fill="currentColor" />
+                          </svg>
+                        </button>
                       </div>
                     </div>
-                    
-                    {/* Enhanced Voice input button */}
-                    <button
-                      type="button"
-                      className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-xl bg-white/80 dark:bg-gray-700/80 border border-gray-200/40 dark:border-gray-600/40 hover:bg-white/90 dark:hover:bg-gray-600/90 text-gray-600 dark:text-gray-400 transition-all duration-200 hover:scale-105 group"
-                    >
-                      <Mic className="h-4 w-4 group-hover:scale-105 transition-transform duration-200" />
-                    </button>
-                    
-                    {/* Enhanced Send button */}
-                    <button
-                      type="submit"
-                      disabled={!inputText.trim() || isLoading}
-                      className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 dark:from-blue-500 dark:to-blue-600 disabled:from-gray-300 disabled:to-gray-400 dark:disabled:from-gray-700 dark:disabled:to-gray-600 text-white transition-all duration-200 shadow hover:shadow-md disabled:shadow transform hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed border border-blue-500/20 dark:border-blue-400/20 group"
-                    >
-                      <Send className="h-4 w-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform duration-200" />
-                    </button>
                   </div>
                 </div>
-                
 
               </form>
             </div>
