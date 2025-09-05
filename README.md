@@ -2,12 +2,12 @@
 
 **An AI-Powered Specification Analysis Tool with Real-Time External Data Integration**
 
-Checkmate Spec Preview is a modern full-stack application that combines Next.js 15 frontend with a Python FastAPI backend, featuring multiple AI model integrations, real-time web search capabilities, cryptocurrency market data, and enhanced chat functionality.
+Checkmate Spec Preview is a modern full-stack application that combines Next.js 15 frontend with a Python FastAPI backend, featuring multiple AI model integrations, real-time web search capabilities, cryptocurrency market data, and enhanced chat functionality. Inspired by Sync, this application provides a sleek, modern interface with advanced animations and comprehensive AI capabilities.
 
 ## 🏗️ Project Architecture
 
 ```
-/Users/linkalphx/Sync-AI/
+.
 ├── checkmate-spec-preview/     # Next.js 15 Frontend
 │   ├── src/
 │   │   ├── app/                # App Router pages and routes
@@ -36,6 +36,17 @@ Checkmate Spec Preview is a modern full-stack application that combines Next.js 
 - **Enhanced Context**: AI responses enriched with external data
 - **Conversation History**: Persistent chat sessions
 
+### 💬 Enhanced Chat Interface
+- **Multi-AI Model Support**: Switch between GPT, Claude, and Groq models
+- **Streaming Responses**: Real-time AI response generation with typing indicators
+- **Conversation History**: Persistent chat sessions with history tracking
+- **Quick Prompts**: Double-click example prompts for instant submission
+- **Keyboard Shortcuts**: Cmd+J/Ctrl+J to focus input from anywhere
+- **Enhanced Input Area**: Modern rounded input with embedded controls
+- **Voice Support**: Microphone button for voice input
+- **File Attachment**: Paperclip button for file uploads
+- **Action Buttons**: Globe for web search, TrendingUp for crypto data
+
 ### 🌐 External API Integrations
 - **Brave Search API**: Real-time web search and news
 - **Binance API**: Cryptocurrency market data and trends
@@ -48,8 +59,12 @@ Checkmate Spec Preview is a modern full-stack application that combines Next.js 
 - **TypeScript**: Full type safety
 - **TailwindCSS 4.0**: Modern utility-first styling
 - **Dark Mode**: Animated theme toggler with smooth transitions
-- **Responsive Design**: Mobile-friendly interface
+- **Responsive Design**: Mobile-friendly interface with slide-in sidebar
 - **Real-Time UI**: WebSocket integration for live updates
+- **Modern UX/UI Design**: Sync-inspired interface with glassmorphism effects
+- **Advanced Animations**: Fade-in, slide-up, bounce, and gradient animations
+- **Interactive Elements**: Enhanced input area with voice support and quick actions
+- **Welcome Screen**: Engaging onboarding with feature cards and example prompts
 
 ### 🔐 Security & Authentication
 - **JWT Authentication**: Secure token-based auth
@@ -116,6 +131,8 @@ npm run dev
 
 **Frontend runs at:** `http://localhost:3000`
 
+> Note: The frontend development server runs on port 3000 by default. If you need to change this, modify the `next.config.ts` file.
+
 ## 📋 Environment Configuration
 
 ### Backend (.env)
@@ -154,6 +171,8 @@ NEXT_PUBLIC_WS_URL=ws://localhost:8000
 - `POST /api/chat/conversations` - Create conversation
 - `GET /api/chat/conversations` - User conversations
 - `POST /api/chat/conversations/{id}/chat` - Stream AI response
+- `POST /api/chat/conversations/{id}/messages` - Add message to conversation
+- `GET /api/chat/capabilities` - Get chat capabilities
 - `WS /api/chat/ws/{id}` - WebSocket chat
 
 ### External Data
@@ -161,6 +180,7 @@ NEXT_PUBLIC_WS_URL=ws://localhost:8000
 - `GET /api/external/search/news` - News search
 - `GET /api/external/crypto/market` - Crypto market data
 - `GET /api/external/crypto/price/{symbol}` - Crypto price
+- `GET /api/external/crypto/trending` - Top gainers and losers
 - `GET /api/external/health` - API health status
 
 ## 🛠️ Technology Stack
@@ -209,6 +229,13 @@ NEXT_PUBLIC_WS_URL=ws://localhost:8000
 - Responsive design for all screen sizes
 - Accessible color contrast ratios
 - Animated UI components from Magic UI
+
+### Sidebar Features
+- **Responsive Design**: Desktop sidebar with collapsible functionality
+- **Mobile Support**: Slide-in overlay for mobile devices
+- **Chat History**: Persistent conversation tracking
+- **User Status**: Online indicator with Twitter/X logo
+- **Theme Toggle**: Dark/light mode switcher in sidebar
 
 ## 🧪 Testing & Validation
 
@@ -279,6 +306,19 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Documentation**: Check the API docs at `/docs`
 - **Issues**: Report bugs via GitHub Issues
 - **Health Check**: Monitor API status at `/health`
+
+## 🎯 Project Status
+
+Checkmate Spec Preview is currently in active development with regular updates and improvements. The application is fully functional with mock data for demonstration purposes, and can be easily connected to real AI APIs and external services by configuring the appropriate API keys.
+
+## 📈 Future Enhancements
+
+- Real API integration for chat functionality
+- Advanced message formatting (markdown, code blocks)
+- File upload and image processing
+- Voice recording and playback
+- Chat export and sharing features
+- Plugin system for extended functionality
 
 ---
 

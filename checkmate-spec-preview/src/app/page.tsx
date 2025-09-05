@@ -161,6 +161,27 @@ export default function Home() {
     }
   };
 
+  // Auto-focus the input field when the component mounts
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  // Keyboard shortcut to focus input field (Cmd+J on Mac, Ctrl+J on Windows/Linux)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Check if Cmd (Mac) or Ctrl (Windows/Linux) is pressed along with 'J'
+      if ((e.metaKey || e.ctrlKey) && e.key === 'j') {
+        e.preventDefault();
+        inputRef.current?.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
   return (
     <div className="flex h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-1000 dark:via-gray-950 dark:to-gray-900 text-gray-900 dark:text-gray-50 transition-all duration-500">
       {/* Mobile Sidebar Overlay */}
@@ -183,10 +204,11 @@ export default function Home() {
                   <div className="relative">
                     <div 
                       className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 shadow-md cursor-pointer hover:scale-105 transition-transform duration-200"
-                      onClick={() => {
-                        setMessages([]);
-                        setShowWelcome(true);
-                      }}
+                      onClick={(e) => {
+                      e.stopPropagation(); // Prevent sidebar toggle when clicking logo
+                      setMessages([]);
+                      setShowWelcome(true);
+                    }}
                       data-sidebar-element="logo"
                     >
                       <Zap className="h-5 w-5 text-white mx-auto" />
@@ -205,7 +227,11 @@ export default function Home() {
 
             {/* Mobile New Chat Button */}
             <div className="p-4 pt-2 pb-2">
-              <button className="w-full flex items-center space-x-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-600 dark:hover:to-blue-800 text-white rounded-xl py-2 px-3 text-sm font-medium transition-all duration-200 shadow hover:shadow-md transform hover:scale-105" onClick={(e) => e.stopPropagation()}>
+              <button className="w-full flex items-center space-x-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-600 dark:hover:to-blue-800 text-white rounded-xl py-2 px-3 text-sm font-medium transition-all duration-200 shadow hover:shadow-md transform hover:scale-105" onClick={(e) => {
+                e.stopPropagation();
+                setMessages([]);
+                setShowWelcome(true);
+              }}>
                 <Plus className="h-5 w-5 flex-shrink-0" />
                 <span>New Chat</span>
               </button>
@@ -300,7 +326,8 @@ export default function Home() {
                 <div 
                   className="flex h-10 w-10 items-center justify-center rounded-2xl 
                   bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 shadow-md cursor-pointer hover:scale-105 transition-transform duration-200"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent sidebar toggle when clicking logo
                     setMessages([]);
                     setShowWelcome(true);
                   }}
@@ -319,7 +346,11 @@ export default function Home() {
             <button 
               className="w-10 h-10 flex items-center justify-center bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-600 dark:hover:to-blue-800 text-white rounded-xl font-medium transition-all duration-200 shadow hover:shadow-md transform hover:scale-105"
               title="New Chat"
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                setMessages([]);
+                setShowWelcome(true);
+              }}
               data-sidebar-element="new-chat-button"
             >
               <Plus className="h-5 w-5 mx-auto" />
@@ -327,7 +358,11 @@ export default function Home() {
           ) : (
             <button 
               className="w-full flex items-center space-x-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-600 dark:hover:to-blue-800 text-white rounded-xl py-3 px-4 text-sm font-medium transition-all duration-200 shadow hover:shadow-md transform hover:scale-[1.02]"
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                setMessages([]);
+                setShowWelcome(true);
+              }}
               data-sidebar-element="new-chat-button"
             >
               <Plus className="h-5 w-5 flex-shrink-0" />
@@ -564,21 +599,10 @@ export default function Home() {
           ) : (
             /* Chat Messages */
             <div className="p-6">
-              <div className="max-w-4xl mx-auto space-y-6">
-                {messages.slice(1).map((message) => (
+              <div className="max-w-3xl mx-auto space-y-6">
+                {messages.map((message) => (
                   <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className="flex max-w-[85%] space-x-4">
-                      {/* Avatar */}
-                      <div className="flex-shrink-0">
-                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg">
-                          {message.role === 'user' ? (
-                            <div className="w-6 h-6"></div>
-                          ) : (
-                            <div className="w-6 h-6"></div>
-                          )}
-                        </div>
-                      </div>
-                      
+                    <div className="flex max-w-full space-x-4">
                       {/* Message Content */}
                       <div className="flex-1">
                         <div className={`rounded-2xl px-6 py-4 shadow-sm border transition-all duration-200 ${
@@ -607,9 +631,6 @@ export default function Home() {
                 {isLoading && (
                   <div className="flex justify-start">
                     <div className="flex space-x-4">
-                      <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg">
-                        <div className="w-6 h-6"></div>
-                      </div>
                       <div className="bg-white dark:bg-gray-800/60 rounded-2xl px-6 py-4 border border-gray-200/40 dark:border-gray-700/40">
                         <div className="flex space-x-2">
                           <div className="w-2 h-2 rounded-full bg-blue-400 animate-bounce [animation-delay:-0.3s]"></div>
