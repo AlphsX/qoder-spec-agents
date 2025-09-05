@@ -40,10 +40,13 @@ export default function Home() {
     { id: 'qwen/qwen3-32b', name: 'Qwen3 32B', provider: 'Qwen', description: 'Latest Qwen model with 32B parameters' },
     { id: 'moonshotai/kimi-k2-instruct', name: 'Kimi K2 Instruct', provider: 'Moonshot AI', description: 'Kimi K2 instruction-following model' }
   ]);
-  
+  const [lastClickTime, setLastClickTime] = useState<number>(0);
+  const [lastClickedPrompt, setLastClickedPrompt] = useState<string>('');
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null); // Added for dropdown click outside detection
+  const sidebarRef = useRef<HTMLDivElement>(null); // Added for sidebar click outside detection
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -118,6 +121,33 @@ export default function Home() {
     inputRef.current?.focus();
   };
 
+  const handlePromptClick = (prompt: string) => {
+    const now = Date.now();
+    const timeDiff = now - lastClickTime;
+    
+    // If the same prompt was clicked within 300ms, treat it as a double-click
+    if (prompt === lastClickedPrompt && timeDiff < 300) {
+      // Double-click detected - submit the prompt directly
+      setInputText(prompt);
+      // Use setTimeout to ensure state is updated before submitting
+      setTimeout(() => {
+        // Directly call the submit handler with a minimal mock event
+        handleSubmit({ preventDefault: () => {} } as React.FormEvent);
+      }, 0);
+      // Reset click tracking
+      setLastClickTime(0);
+      setLastClickedPrompt('');
+    } else {
+      // Single click - populate input field
+      setInputText(prompt);
+      // Auto-focus the input field
+      inputRef.current?.focus();
+      // Update click tracking
+      setLastClickTime(now);
+      setLastClickedPrompt(prompt);
+    }
+  };
+
   return (
     <div className="flex h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-1000 dark:via-gray-950 dark:to-gray-900 text-gray-900 dark:text-gray-50 transition-all duration-500">
       {/* Mobile Sidebar Overlay */}
@@ -138,7 +168,14 @@ export default function Home() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="relative">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 shadow-lg">
+                    <div 
+                      className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 shadow-md cursor-pointer hover:scale-105 transition-transform duration-200"
+                      onClick={() => {
+                        setMessages([]);
+                        setShowWelcome(true);
+                      }}
+                      data-sidebar-element="logo"
+                    >
                       <Zap className="h-5 w-5 text-white mx-auto" />
                     </div>
                   </div>
@@ -146,6 +183,7 @@ export default function Home() {
                 <button 
                   onClick={() => setIsSidebarOpen(false)}
                   className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center justify-center"
+                  data-sidebar-element="mobile-close"
                 >
                   <Plus className="h-4 w-4 rotate-45 mx-auto" />
                 </button>
@@ -154,7 +192,7 @@ export default function Home() {
 
             {/* Mobile New Chat Button */}
             <div className="p-4 pt-2 pb-2">
-              <button className="w-full flex items-center space-x-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800 text-white rounded-xl py-2 px-3 text-sm font-medium transition-all duration-200 shadow hover:shadow-md transform hover:scale-105">
+              <button className="w-full flex items-center space-x-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-600 dark:hover:to-blue-800 text-white rounded-xl py-2 px-3 text-sm font-medium transition-all duration-200 shadow hover:shadow-md transform hover:scale-105" onClick={(e) => e.stopPropagation()}>
                 <Plus className="h-5 w-5 flex-shrink-0" />
                 <span>New Chat</span>
               </button>
@@ -197,7 +235,7 @@ export default function Home() {
                     </div>
                     <div className="absolute bottom-0 right-0 h-2.5 w-2.5 bg-green-500 dark:bg-green-400 rounded-full border-2 border-white dark:border-gray-900"></div>
                   </div>
-                  <span className="text-sm font-medium">User</span>
+                  <span className="text-sm font-medium">𝕏</span>
                 </div>
                 <div className="flex items-center space-x-1">
                 <AnimatedThemeToggler 
@@ -212,6 +250,7 @@ export default function Home() {
                     setIsSidebarOpen(false);
                   }}
                   title="Hide sidebar"
+                  data-sidebar-element="mobile-sidebar-toggle"
                 >
                   <ChevronLeft className="h-4 w-4 text-gray-600 dark:text-gray-400 mx-auto" />
                 </button>
@@ -224,16 +263,34 @@ export default function Home() {
 
       {/* Desktop Sidebar */}
       <div 
-        className={`hidden md:flex bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-r border-gray-200/30 dark:border-gray-700/30 flex-col transition-all duration-300 ${isDesktopSidebarCollapsed ? 'w-16 cursor-e-resize hover:bg-gray-50/60 dark:hover:bg-gray-800/60' : 'w-64 cursor-w-resize hover:bg-gray-50/60 dark:hover:bg-gray-800/60'}`}
-        onClick={isDesktopSidebarCollapsed ? () => setIsDesktopSidebarCollapsed(false) : () => setIsDesktopSidebarCollapsed(true)}
-        title={isDesktopSidebarCollapsed ? 'Click anywhere to expand sidebar' : 'Click anywhere to collapse sidebar'}
+        ref={sidebarRef}
+        className={`hidden md:flex bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-r 
+          border-gray-200/30 dark:border-gray-700/30 flex-col transition-all duration-300 
+          ${isDesktopSidebarCollapsed ? 'w-16 cursor-e-resize' : 'w-64 cursor-w-resize'} overflow-hidden`} // cursor status
+        data-sidebar-element="desktop-sidebar"
+        onClick={(e) => {
+          const target = e.target as HTMLElement;
+          const isSidebarElement = target.closest('[data-sidebar-element]');
+          // Only toggle if clicking on the background (not on elements)
+          if (!isSidebarElement) {
+            setIsDesktopSidebarCollapsed((prev) => !prev);
+          }
+        }}
       >
         {/* Sidebar Header */}
         <div className="p-4">
           <div className="flex items-center justify-center">
             <div className={`flex items-center w-full ${isDesktopSidebarCollapsed ? 'justify-center' : 'justify-start'}`}>
               <div className="relative">
-                <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 shadow-md">
+                <div 
+                  className="flex h-10 w-10 items-center justify-center rounded-2xl 
+                  bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 shadow-md cursor-pointer hover:scale-105 transition-transform duration-200"
+                  onClick={() => {
+                    setMessages([]);
+                    setShowWelcome(true);
+                  }}
+                  data-sidebar-element="logo"
+                >
                   <Zap className="h-5 w-5 text-white mx-auto" />
                 </div>
               </div>
@@ -245,16 +302,18 @@ export default function Home() {
         <div className="px-4 pt-4 pb-2 flex flex-col items-center justify-center">
           {isDesktopSidebarCollapsed ? (
             <button 
-              className="w-10 h-10 flex items-center justify-center bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800 text-white rounded-xl font-medium transition-all duration-200 shadow hover:shadow-md transform hover:scale-105"
+              className="w-10 h-10 flex items-center justify-center bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-600 dark:hover:to-blue-800 text-white rounded-xl font-medium transition-all duration-200 shadow hover:shadow-md transform hover:scale-105"
               title="New Chat"
               onClick={(e) => e.stopPropagation()}
+              data-sidebar-element="new-chat-button"
             >
               <Plus className="h-5 w-5 mx-auto" />
             </button>
           ) : (
             <button 
-              className="w-full flex items-center space-x-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800 text-white rounded-xl py-3 px-4 text-sm font-medium transition-all duration-200 shadow hover:shadow-md transform hover:scale-[1.02]"
+              className="w-full flex items-center space-x-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-600 dark:hover:to-blue-800 text-white rounded-xl py-3 px-4 text-sm font-medium transition-all duration-200 shadow hover:shadow-md transform hover:scale-[1.02]"
               onClick={(e) => e.stopPropagation()}
+              data-sidebar-element="new-chat-button"
             >
               <Plus className="h-5 w-5 flex-shrink-0" />
               <span className="font-semibold">New Chat</span>
@@ -269,6 +328,7 @@ export default function Home() {
               <button 
                 className="w-full h-12 flex items-center space-x-3 bg-white/80 dark:bg-gray-800/40 hover:bg-gray-100 dark:hover:bg-gray-700/40 text-gray-800 dark:text-gray-200 rounded-xl py-3 px-4 text-sm font-medium transition-all duration-200 shadow-sm hover:shadow border border-gray-200/40 dark:border-gray-700/40"
                 onClick={(e) => e.stopPropagation()}
+                data-sidebar-element="chat-history-item"
               >
                 <Globe className="h-5 w-5 text-blue-500 flex-shrink-0" />
                 <div className="text-left">
@@ -279,6 +339,7 @@ export default function Home() {
               <button 
                 className="w-full h-12 flex items-center space-x-3 bg-white/80 dark:bg-gray-800/40 hover:bg-gray-100 dark:hover:bg-gray-700/40 text-gray-800 dark:text-gray-200 rounded-xl py-3 px-4 text-sm font-medium transition-all duration-200 shadow-sm hover:shadow border border-gray-200/40 dark:border-gray-700/40"
                 onClick={(e) => e.stopPropagation()}
+                data-sidebar-element="chat-history-item"
               >
                 <TrendingUp className="h-5 w-5 text-green-500 flex-shrink-0" />
                 <div className="text-left">
@@ -289,6 +350,7 @@ export default function Home() {
               <button 
                 className="w-full h-12 flex items-center space-x-3 bg-white/80 dark:bg-gray-800/40 hover:bg-gray-100 dark:hover:bg-gray-700/40 text-gray-800 dark:text-gray-200 rounded-xl py-3 px-4 text-sm font-medium transition-all duration-200 shadow-sm hover:shadow border border-gray-200/40 dark:border-gray-700/40"
                 onClick={(e) => e.stopPropagation()}
+                data-sidebar-element="chat-history-item"
               >
                 <Sparkles className="h-5 w-5 text-purple-500 flex-shrink-0" />
                 <div className="text-left">
@@ -303,6 +365,7 @@ export default function Home() {
                 className="w-10 h-10 rounded-xl bg-white/80 dark:bg-gray-800/40 hover:bg-gray-100 dark:hover:bg-gray-700/40 text-gray-800 dark:text-gray-200 flex items-center justify-center shadow-sm hover:shadow border border-gray-200/40 dark:border-gray-700/40 transition-all duration-200 transform hover:scale-105"
                 title="Web search capabilities" 
                 onClick={(e) => e.stopPropagation()}
+                data-sidebar-element="chat-history-item"
               >
                 <Globe className="h-5 w-5 text-blue-500 mx-auto" />
               </button>
@@ -310,6 +373,7 @@ export default function Home() {
                 className="w-10 h-10 rounded-xl bg-white/80 dark:bg-gray-800/40 hover:bg-gray-100 dark:hover:bg-gray-700/40 text-gray-800 dark:text-gray-200 flex items-center justify-center shadow-sm hover:shadow border border-gray-200/40 dark:border-gray-700/40 transition-all duration-200 transform hover:scale-105"
                 title="Crypto market analysis" 
                 onClick={(e) => e.stopPropagation()}
+                data-sidebar-element="chat-history-item"
               >
                 <TrendingUp className="h-5 w-5 text-green-500 mx-auto" />
               </button>
@@ -317,6 +381,7 @@ export default function Home() {
                 className="w-10 h-10 rounded-xl bg-white/80 dark:bg-gray-800/40 hover:bg-gray-100 dark:hover:bg-gray-700/40 text-gray-800 dark:text-gray-200 flex items-center justify-center shadow-sm hover:shadow border border-gray-200/40 dark:border-gray-700/40 transition-all duration-200 transform hover:scale-105"
                 title="General AI conversation" 
                 onClick={(e) => e.stopPropagation()}
+                data-sidebar-element="chat-history-item"
               >
                 <Sparkles className="h-5 w-5 text-purple-500 mx-auto" />
               </button>
@@ -336,15 +401,16 @@ export default function Home() {
                   <div className="absolute bottom-0 right-0 h-3 w-3 bg-green-500 dark:bg-green-400 rounded-full border-2 border-white dark:border-gray-900"></div>
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">User</p>
+                  <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">𝕏</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">Online</p>
                 </div>
               </div>
               <div className="flex items-center space-x-1">
                 <button 
-                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800/60 transition-colors flex items-center justify-center" 
+                  className="w-10 h-10 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800/60 transition-colors flex items-center justify-center" // hide sidebar toggle button
                   onClick={(e) => {e.stopPropagation(); setIsDesktopSidebarCollapsed(!isDesktopSidebarCollapsed);}}
                   title={isDesktopSidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'}
+                  data-sidebar-element="desktop-sidebar-toggle"
                 >
                   {isDesktopSidebarCollapsed ? (
                     <ChevronRight className="h-5 w-5 text-gray-600 dark:text-gray-400 mx-auto" />
@@ -356,7 +422,7 @@ export default function Home() {
             </div>
           ) : (
             <div className="flex flex-col items-center space-y-3">
-              <div className="relative" title="User">
+              <div className="relative" title="𝕏">
                 <div className="h-9 w-9 bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 rounded-full flex items-center justify-center">
                   <User className="h-6 w-6 text-white mx-auto" />
                 </div>
@@ -364,9 +430,10 @@ export default function Home() {
               </div>
               <div className="flex flex-col items-center space-y-1">
                 <button 
-                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800/60 transition-colors flex items-center justify-center" 
+                  className="w-10 h-10 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800/60 transition-colors flex items-center justify-center" // show sidebar toggle button
                   onClick={(e) => {e.stopPropagation(); setIsDesktopSidebarCollapsed(!isDesktopSidebarCollapsed);}}
                   title={isDesktopSidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'}
+                  data-sidebar-element="desktop-sidebar-toggle"
                 >
                   {isDesktopSidebarCollapsed ? (
                     <ChevronRight className="h-5 w-5 text-gray-600 dark:text-gray-400 mx-auto" />
@@ -469,7 +536,7 @@ export default function Home() {
                     ].map((prompt, index) => (
                       <button
                         key={index}
-                        onClick={() => setInputText(prompt)}
+                        onClick={() => handlePromptClick(prompt)}
                         className="px-4 py-2 rounded-full bg-white/80 dark:bg-gray-800/40 text-sm text-gray-700 dark:text-gray-300 transition-all duration-200 border border-gray-200/40 dark:border-gray-700/40 hover:border-gray-300 dark:hover:border-gray-600 hover:shadow-sm"
                       >
                         {prompt}
@@ -485,13 +552,10 @@ export default function Home() {
               <div className="max-w-4xl mx-auto space-y-6">
                 {messages.slice(1).map((message) => (
                   <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`flex max-w-[85%] space-x-4 ${message.role === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                    <div className="flex max-w-[85%] space-x-4">
                       {/* Avatar */}
-                      <div className={`flex-shrink-0 ${message.role === 'user' ? 'order-2' : 'order-1'}`}>
-                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg ${message.role === 'user'
-                          ? ''
-                          : ''
-                        }`}>
+                      <div className="flex-shrink-0">
+                        <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg">
                           {message.role === 'user' ? (
                             <div className="w-6 h-6"></div>
                           ) : (
@@ -501,7 +565,7 @@ export default function Home() {
                       </div>
                       
                       {/* Message Content */}
-                      <div className={`${message.role === 'user' ? 'order-1' : 'order-2'} flex-1`}>
+                      <div className="flex-1">
                         <div className={`rounded-2xl px-6 py-4 shadow-sm border transition-all duration-200 ${
                           message.role === 'user'
                             ? 'bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 text-white border-blue-500/20'
@@ -596,7 +660,7 @@ export default function Home() {
                         value={inputText}
                         onChange={(e) => setInputText(e.target.value)}
                         onKeyDown={handleKeyDown}
-                        placeholder="Ask me anything... I can search the web, analyze crypto, or just chat!"
+                        placeholder="Ask me anything..."
                         className="w-full resize-none bg-transparent px-14 py-3 pr-14 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none text-sm leading-relaxed font-medium"
                         rows={1}
                         style={{ minHeight: '40px', maxHeight: '120px' }}
