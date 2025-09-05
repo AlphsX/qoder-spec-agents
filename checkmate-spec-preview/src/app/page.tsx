@@ -109,6 +109,19 @@ export default function Home() {
     };
   }, []);
 
+  // Handle sidebar toggle when clicking on sidebar background
+  useEffect(() => {
+    const handleSidebarToggle = (event: MouseEvent) => {
+      // Skip if already handled by the container's onClick
+      if (event.defaultPrevented) return;
+    };
+
+    document.addEventListener('mousedown', handleSidebarToggle);
+    return () => {
+      document.removeEventListener('mousedown', handleSidebarToggle);
+    };
+  }, []);
+
   const handleSearchWeb = () => {
     setInputText('Search the web for latest information');
     setIsDropdownOpen(false);
@@ -266,17 +279,19 @@ export default function Home() {
         ref={sidebarRef}
         className={`hidden md:flex bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border-r 
           border-gray-200/30 dark:border-gray-700/30 flex-col transition-all duration-300 
-          ${isDesktopSidebarCollapsed ? 'w-16 cursor-e-resize' : 'w-64 cursor-w-resize'} overflow-hidden`} // cursor status
-        data-sidebar-element="desktop-sidebar"
-        onClick={(e) => {
-          const target = e.target as HTMLElement;
-          const isSidebarElement = target.closest('[data-sidebar-element]');
-          // Only toggle if clicking on the background (not on elements)
-          if (!isSidebarElement) {
-            setIsDesktopSidebarCollapsed((prev) => !prev);
-          }
-        }}
-      >
+          ${isDesktopSidebarCollapsed ? 'w-16 cursor-e-resize' : 'w-64 cursor-w-resize'} overflow-hidden`}
+          data-sidebar-element="desktop-sidebar"
+          onClick={(e) => {
+            // Prevent toggle when clicking on interactive elements
+            const target = e.target as HTMLElement;
+            const isInteractiveElement = target.closest('button, a, input, textarea, select');
+            
+            if (!isInteractiveElement) {
+              e.stopPropagation();
+              setIsDesktopSidebarCollapsed(prev => !prev);
+            }
+          }}
+        >
         {/* Sidebar Header */}
         <div className="p-4">
           <div className="flex items-center justify-center">
