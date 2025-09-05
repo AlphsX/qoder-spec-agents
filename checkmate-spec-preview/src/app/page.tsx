@@ -42,6 +42,11 @@ export default function Home() {
   ]);
   const [lastClickTime, setLastClickTime] = useState<number>(0);
   const [lastClickedPrompt, setLastClickedPrompt] = useState<string>('');
+  
+  // Voice recognition state variables
+  const [isListening, setIsListening] = useState(false);
+  const speechRecognitionRef = useRef<any>(null);
+  const [voiceError, setVoiceError] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -165,6 +170,140 @@ export default function Home() {
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
+
+  // Initialize SpeechRecognition API
+  useEffect(() => {
+    // Check if browser supports SpeechRecognition
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    
+    if (!SpeechRecognition) {
+      setVoiceError('Speech recognition not supported in this browser');
+      return;
+    }
+
+    // Create new SpeechRecognition instance
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
+    // Set up event handlers
+    recognition.onresult = (event: any) => {
+      const transcript = Array.from(event.results)
+        .map((result: any) => result[0])
+        .map(result => result.transcript)
+        .join('');
+      
+      setInputText(transcript);
+      setIsListening(false);
+      
+      // Auto-focus the input field after speech recognition
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error('Speech recognition error', event.error);
+      setIsListening(false);
+      
+      let errorMessage = '';
+      switch (event.error) {
+        case 'no-speech':
+          errorMessage = 'No speech was detected. Please try again.';
+          break;
+        case 'audio-capture':
+          errorMessage = 'Audio capture failed. Please check your microphone.';
+          break;
+        case 'not-allowed':
+          errorMessage = 'Microphone access denied. Please allow microphone access in your browser settings.';
+          break;
+        case 'network':
+          errorMessage = 'Network error occurred during recognition.';
+          break;
+        case 'aborted':
+          // User aborted, no need to show error
+          return;
+        default:
+          errorMessage = `Speech recognition error: ${event.error}`;
+      }
+      
+      setVoiceError(errorMessage);
+      
+      // Clear error message after 5 seconds
+      setTimeout(() => {
+        setVoiceError(null);
+      }, 5000);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
+
+    // Store reference to recognition instance
+    speechRecognitionRef.current = recognition;
+
+    // Cleanup function
+    return () => {
+      if (speechRecognitionRef.current) {
+        try {
+          speechRecognitionRef.current.stop();
+        } catch (e) {
+          console.warn('Error stopping speech recognition:', e);
+        }
+        speechRecognitionRef.current = null;
+      }
+    };
+  }, []);
+
+  const toggleVoiceRecognition = () => {
+    // Check if browser supports SpeechRecognition
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    
+    if (!SpeechRecognition) {
+      setVoiceError('Speech recognition not supported in this browser. Please try Chrome, Edge, or Safari.');
+      return;
+    }
+
+    if (!speechRecognitionRef.current) {
+      setVoiceError('Speech recognition not initialized properly');
+      return;
+    }
+
+    if (isListening) {
+      // Stop listening
+      speechRecognitionRef.current.stop();
+      setIsListening(false);
+    } else {
+      // Start listening
+      try {
+        speechRecognitionRef.current.start();
+        // isListening state will be set by the onstart event handler
+        setVoiceError(null);
+      } catch (error: any) {
+        console.error('Error starting speech recognition:', error);
+        setIsListening(false);
+        let errorMessage = 'Error starting speech recognition';
+        if (error.name === 'NotAllowedError') {
+          errorMessage = 'Microphone access denied. Please allow microphone access in your browser settings.';
+        } else if (error.name === 'NotFoundError') {
+          errorMessage = 'No microphone found. Please connect a microphone and try again.';
+        } else if (error.message) {
+          errorMessage = error.message;
+        }
+        setVoiceError(errorMessage);
+        
+        // Clear error message after 5 seconds
+        setTimeout(() => {
+          setVoiceError(null);
+        }, 5000);
+      }
+    }
+  };
 
   // Keyboard shortcut to focus input field (Cmd+J on Mac, Ctrl+J on Windows/Linux)
   useEffect(() => {
@@ -631,7 +770,7 @@ export default function Home() {
                 {isLoading && (
                   <div className="flex justify-start">
                     <div className="flex space-x-4">
-                      <div className="bg-white dark:bg-gray-800/60 rounded-2xl px-6 py-4 border border-gray-200/40 dark:border-gray-700/40">
+                      <div className="bg-transparent rounded-2xl px-6 py-4 border border-gray-900/20 dark:border-gray-100/20">
                         <div className="flex space-x-2">
                           <div className="w-2 h-2 rounded-full bg-blue-400 animate-bounce [animation-delay:-0.3s]"></div>
                           <div className="w-2 h-2 rounded-full bg-blue-500 animate-bounce [animation-delay:-0.15s]"></div>
@@ -670,10 +809,10 @@ export default function Home() {
                         </button>
                         {/* Dropdown menu for search options */}
                         {isDropdownOpen && (
-                          <div className="absolute bottom-full left-0 mb-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200/40 dark:border-gray-700/40 py-2 z-10">
+                          <div className="absolute bottom-full left-0 mb-2 w-48 rounded-xl shadow-lg border border-gray-200/40 dark:border-gray-700/40 py-2 z-10 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl">
                             <button
                               type="button"
-                              className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
+                              className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/40 flex items-center"
                               onClick={handleSearchWeb}
                             >
                               <Globe className="h-4 w-4 mr-2" />
@@ -681,7 +820,7 @@ export default function Home() {
                             </button>
                             <button
                               type="button"
-                              className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
+                              className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/40 flex items-center"
                               onClick={handleGetCryptoData}
                             >
                               <TrendingUp className="h-4 w-4 mr-2" />
@@ -707,9 +846,22 @@ export default function Home() {
                         {/* Enhanced Voice input button */}
                         <button
                           type="button"
-                          className="flex-shrink-0 w-9 h-9 flex items-center justify-center"
+                          className={`flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-full transition-all duration-200 ${
+                            isListening 
+                              ? 'text-red-500 hover:bg-red-500/10' 
+                              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
+                          }`}
+                          onClick={toggleVoiceRecognition}
+                          disabled={!!voiceError}
+                          title={voiceError || (isListening ? 'Stop listening' : 'Start voice input')}
                         >
-                          <Mic className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                          {isListening ? (
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                              <rect x="6" y="6" width="12" height="12" rx="1" />
+                            </svg>
+                          ) : (
+                            <Mic className={`h-5 w-5`} />
+                          )}
                         </button>
                         
                         {/* Enhanced Send button with upward arrow icon */}
@@ -735,6 +887,12 @@ export default function Home() {
                 </div>
 
               </form>
+              {/* Voice error message */}
+              {voiceError && (
+                <div className="mt-2 text-center">
+                  <p className="text-sm text-red-500 dark:text-red-400">{voiceError}</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
