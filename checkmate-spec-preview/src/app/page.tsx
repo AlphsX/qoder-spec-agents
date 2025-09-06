@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Send, Sparkles, Globe, TrendingUp, User, Mic, Plus, Settings, MoreHorizontal, Zap, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useDarkMode } from '@/hooks';
-import { AnimatedThemeToggler, VoiceThemeNotification } from "@/components/magicui";
+import { AnimatedThemeToggler, VoiceThemeNotification, AuroraText } from "@/components/magicui";
 import { AIModelDropdown } from "@/components/magicui/ai-model-dropdown";
 
 interface Message {
@@ -249,7 +249,7 @@ export default function Home() {
     };
 
     recognition.onerror = (event: any) => {
-      console.error('Speech recognition error', event.error);
+      // console.error('Speech recognition error', event.error);
       setIsListening(false);
       
       let errorMessage = '';
@@ -350,7 +350,7 @@ export default function Home() {
     }
   };
 
-  // Keyboard shortcut to focus input field (Cmd+J on Mac, Ctrl+J on Windows/Linux)
+  // Keyboard shortcut to focus input field (⌘+J on Mac, Ctrl+J on Windows/Linux)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Check if Cmd (Mac) or Ctrl (Windows/Linux) is pressed along with 'J'
@@ -739,12 +739,11 @@ export default function Home() {
                   <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 shadow-xl mb-6">
                     <Zap className="h-10 w-10 text-white mx-auto" />
                   </div>
-                  <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 via-gray-700 to-gray-600 dark:from-gray-100 dark:via-gray-300 dark:to-gray-400 bg-clip-text text-transparent mb-4">
-                    Hey there, I&apos;m Sync!
+                  <h1 className="text-4xl font-bold mb-4">
+                    <AuroraText>Hey there, I&apos;m Sync!</AuroraText>
                   </h1>
                   <p className="text-lg text-gray-600 dark:text-gray-400 mb-8 animate-fade-in">
-                    I&apos;m here to help you with anything you need. I can search the web, analyze crypto markets, 
-                    have deep conversations, or just chat about whatever interests you.
+                    How can I help you?
                   </p>
                 </div>
                 

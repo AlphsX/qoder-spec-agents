@@ -38,14 +38,14 @@ async def get_db_context():
 
 async def create_tables():
     """Create all database tables"""
-    from app.chat.models import Base
+    from app.enhanced_chat_models import Base
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     print("✅ Database tables created successfully")
 
 async def init_database():
     """Initialize database with default data"""
-    from app.chat.models import SystemSettings, User
+    from app.enhanced_chat_models import SystemSettings, User
     from app.auth.router import get_password_hash
     
     async with get_db_context() as session:

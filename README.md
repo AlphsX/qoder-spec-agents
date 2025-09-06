@@ -24,6 +24,7 @@ Checkmate Spec Preview is a modern full-stack application that combines Next.js 
 │   │   ├── external_apis/      # API integrations (Binance, Brave Search)
 │   │   ├── main.py             # FastAPI application entry point
 │   │   └── config.py           # Configuration management
+│   ├── database_setup.py       # Database initialization and setup
 │   └── requirements.txt
 └── README.md                   # This file
 ```
@@ -100,6 +101,9 @@ pip install -r requirements.txt
 # Create environment file
 cp .env.example .env  # Add your API keys
 
+# Initialize the database
+python database_setup.py
+
 # Start the backend server
 python -m app.main
 ```
@@ -150,7 +154,7 @@ BINANCE_SECRET_KEY=your_binance_secret
 # Application Settings
 ENVIRONMENT=development
 SECRET_KEY=your_jwt_secret_key
-DATABASE_URL=sqlite:///./checkmate.db
+DATABASE_URL=sqlite+aiosqlite:///./checkmate_spec_preview.db
 ```
 
 ### Frontend (.env.local)
@@ -167,13 +171,21 @@ NEXT_PUBLIC_WS_URL=ws://localhost:8000
 - `GET /api/auth/me` - Current user information
 
 ### Chat & AI
-- `GET /api/chat/models` - Available AI models
+- `GET /api/chat/models` - Available AI models with enhanced capabilities
 - `POST /api/chat/conversations` - Create conversation
 - `GET /api/chat/conversations` - User conversations
-- `POST /api/chat/conversations/{id}/chat` - Stream AI response
 - `POST /api/chat/conversations/{id}/messages` - Add message to conversation
-- `GET /api/chat/capabilities` - Get chat capabilities
-- `WS /api/chat/ws/{id}` - WebSocket chat
+- `POST /api/chat/conversations/{id}/chat` - Stream AI response with external data
+- `GET /api/chat/capabilities` - Get enhanced chat capabilities
+- `WS /api/chat/ws/{id}` - Enhanced WebSocket chat with real-time external data
+
+### Database Models
+- `User` - User accounts with preferences and API usage tracking
+- `Conversation` - Chat conversations with model and external API tracking
+- `Message` - Individual messages with metadata and external data tracking
+- `ApiUsage` - API usage tracking for cost and limit management
+- `ExternalApiCache` - Cached external API responses for performance
+- `SystemSettings` - System-wide configuration settings
 
 ### External Data
 - `GET /api/external/search` - Web search
@@ -205,6 +217,8 @@ NEXT_PUBLIC_WS_URL=ws://localhost:8000
 - **aiohttp** - Async HTTP client
 - **WebSockets** - Real-time communication
 - **JWT** - Authentication
+- **SQLite** - Development database
+- **Async Database Support** - aiosqlite for async operations
 
 ### External APIs
 - **Groq** - Ultra-fast AI inference
@@ -268,6 +282,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 COPY . .
+RUN python database_setup.py
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
 ```
 
@@ -309,7 +324,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🎯 Project Status
 
-Checkmate Spec Preview is currently in active development with regular updates and improvements. The application is fully functional with mock data for demonstration purposes, and can be easily connected to real AI APIs and external services by configuring the appropriate API keys.
+Checkmate Spec Preview is currently in active development with regular updates and improvements. The application features a complete database schema with user management, conversation tracking, and API usage monitoring. It is fully functional with mock data for demonstration purposes, and can be easily connected to real AI APIs and external services by configuring the appropriate API keys.
 
 ## 📈 Future Enhancements
 

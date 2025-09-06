@@ -6,6 +6,7 @@ import uvicorn
 
 from app.auth.router import router as auth_router
 from app.chat.router import router as chat_router
+from app.enhanced_chat_router import router as enhanced_chat_router
 from app.config import settings
 
 @asynccontextmanager
@@ -18,7 +19,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Checkmate Spec Preview API",
-    description="Backend API for Checkmate Spec Preview - AI-powered specification analysis tool",
+    description="Backend API for Checkmate Spec Preview - AI Agent inspired by Sync",
     version="1.0.0",
     lifespan=lifespan
 )
@@ -35,6 +36,7 @@ app.add_middleware(
 # Include routers
 app.include_router(auth_router, prefix="/api/auth", tags=["authentication"])
 app.include_router(chat_router, prefix="/api/chat", tags=["chat"])
+app.include_router(enhanced_chat_router, prefix="/api/chat", tags=["chat"])
 
 @app.get("/")
 async def root():
