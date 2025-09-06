@@ -87,7 +87,10 @@ const config: Config = {
   			shimmer: 'shimmer 2s infinite',
   			gradient: 'gradient 4s ease infinite',
   			bounce: 'bounce 1s infinite',
-  			pulse: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+  			pulse: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'notification-enter': 'notificationEnter 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
+        'notification-exit': 'notificationExit 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
+        'luxury-pulse': 'luxuryPulse 2s ease-in-out infinite'
   		},
   		keyframes: {
   			fadeIn: {
@@ -216,7 +219,37 @@ const config: Config = {
   				'50%': {
   					opacity: '0.5'
   				}
-  			}
+  			},
+        notificationEnter: {
+          '0%': {
+            transform: 'translateY(-100%) scale(0.8)',
+            opacity: '0'
+          },
+          '100%': {
+            transform: 'translateY(0) scale(1)',
+            opacity: '1'
+          }
+        },
+        notificationExit: {
+          '0%': {
+            transform: 'translateY(0) scale(1)',
+            opacity: '1'
+          },
+          '100%': {
+            transform: 'translateY(-100%) scale(0.8)',
+            opacity: '0'
+          }
+        },
+        luxuryPulse: {
+          '0%, 100%': {
+            transform: 'scale(1)',
+            opacity: '1'
+          },
+          '50%': {
+            transform: 'scale(1.05)',
+            opacity: '0.9'
+          }
+        }
   		},
   		backdropBlur: {
   			xs: '2px'

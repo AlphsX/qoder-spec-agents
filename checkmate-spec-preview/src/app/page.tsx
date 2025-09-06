@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { Send, Sparkles, Globe, TrendingUp, User, Bot, Mic, Plus, Settings, MoreHorizontal, Zap, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Send, Sparkles, Globe, TrendingUp, User, Mic, Plus, Settings, MoreHorizontal, Zap, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useDarkMode } from '@/hooks';
-import { AnimatedThemeToggler } from "@/components/magicui";
+import { AnimatedThemeToggler, VoiceThemeNotification } from "@/components/magicui";
 import { AIModelDropdown } from "@/components/magicui/ai-model-dropdown";
 
 interface Message {
@@ -47,6 +47,11 @@ export default function Home() {
   const [isListening, setIsListening] = useState(false);
   const speechRecognitionRef = useRef<any>(null);
   const [voiceError, setVoiceError] = useState<string | null>(null);
+  const [voiceThemeNotification, setVoiceThemeNotification] = useState<{
+    isVisible: boolean;
+    message: string;
+    theme: 'dark' | 'light';
+  }>({ isVisible: false, message: '', theme: 'dark' });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -194,6 +199,46 @@ export default function Home() {
         .map(result => result.transcript)
         .join('');
       
+      // Check for voice commands to switch theme
+      const lowerTranscript = transcript.toLowerCase().trim();
+      if (lowerTranscript === 'system switch dark mode') {
+        // Switch to dark mode if not already in dark mode
+        if (!isDarkMode) {
+          toggleDarkMode();
+          setVoiceThemeNotification({
+            isVisible: true,
+            message: 'Switched to dark mode',
+            theme: 'dark'
+          });
+        } else {
+          setVoiceThemeNotification({
+            isVisible: true,
+            message: 'Already in dark mode',
+            theme: 'dark'
+          });
+        }
+        setIsListening(false);
+        return; // Don't set input text for voice commands
+      } else if (lowerTranscript === 'system switch light mode') {
+        // Switch to light mode if not already in light mode
+        if (isDarkMode) {
+          toggleDarkMode();
+          setVoiceThemeNotification({
+            isVisible: true,
+            message: 'Switched to light mode',
+            theme: 'light'
+          });
+        } else {
+          setVoiceThemeNotification({
+            isVisible: true,
+            message: 'Already in light mode',
+            theme: 'light'
+          });
+        }
+        setIsListening(false);
+        return; // Don't set input text for voice commands
+      }
+      
       setInputText(transcript);
       setIsListening(false);
       
@@ -210,7 +255,7 @@ export default function Home() {
       let errorMessage = '';
       switch (event.error) {
         case 'no-speech':
-          errorMessage = 'No speech was detected. Please try again.';
+          errorMessage = ''; // 'No speech was detected. Please try again.'
           break;
         case 'audio-capture':
           errorMessage = 'Audio capture failed. Please check your microphone.';
@@ -224,8 +269,8 @@ export default function Home() {
         case 'aborted':
           // User aborted, no need to show error
           return;
-        default:
-          errorMessage = `Speech recognition error: ${event.error}`;
+        // default:
+        //   errorMessage = `Speech recognition error: ${event.error}`;
       }
       
       setVoiceError(errorMessage);
@@ -258,7 +303,7 @@ export default function Home() {
         speechRecognitionRef.current = null;
       }
     };
-  }, []);
+  }, [isDarkMode, toggleDarkMode]);
 
   const toggleVoiceRecognition = () => {
     // Check if browser supports SpeechRecognition
@@ -674,7 +719,18 @@ export default function Home() {
         </header>
 
         {/* Chat Container */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto relative">
+          {/* Voice Theme Notification */}
+          <VoiceThemeNotification
+            message={voiceThemeNotification.message}
+            theme={voiceThemeNotification.theme}
+            isVisible={voiceThemeNotification.isVisible}
+            onClose={() => setVoiceThemeNotification(prev => ({ ...prev, isVisible: false }))}
+          />
+          
+          {/* Notification Toast */}
+          {/* Old notification system removed, using VoiceThemeNotification instead */}
+          
           {showWelcome ? (
             /* Welcome Screen */
             <div className="flex-1 flex items-center justify-center p-8 animate-fade-in-up">
