@@ -1011,7 +1011,7 @@ export default function Home() {
                             xmlns="http://www.w3.org/2000/svg" 
                             className={`h-5 w-5 group-hover:-translate-y-0.5 transition-transform duration-200 mx-auto ${
                             (!inputText.trim() || isLoading) 
-                              ? "text-gray-900 dark:text-gray-100" 
+                              ? "text-gray-900/20 dark:text-gray-100/20" 
                               : "text-white"
                           }`}
                           >
