@@ -1,13 +1,13 @@
-# 🎯 Checkmate Spec Preview
+# 🎯 SyncAI (Checkmate Spec Preview)
 
 **An AI-Powered Specification Analysis Tool with Real-Time External Data Integration**
 
-Checkmate Spec Preview is a modern full-stack application that combines Next.js 15 frontend with a Python FastAPI backend, featuring multiple AI model integrations, real-time web search capabilities, cryptocurrency market data, and enhanced chat functionality. Inspired by Sync, this application provides a sleek, modern interface with advanced animations and comprehensive AI capabilities.
+SyncAI (Checkmate Spec Preview) is a modern full-stack application that combines Next.js 15 frontend with a Python FastAPI backend, featuring multiple AI model integrations, real-time web search capabilities, cryptocurrency market data, and enhanced chat functionality. Inspired by Sync, this application provides a sleek, modern interface with advanced animations and comprehensive AI capabilities.
 
 ## 🏗️ Project Architecture
 
+### System Components
 ```
-.
 ├── checkmate-spec-preview/     # Next.js 15 Frontend
 │   ├── src/
 │   │   ├── app/                # App Router pages and routes
@@ -29,23 +29,40 @@ Checkmate Spec Preview is a modern full-stack application that combines Next.js 
 └── README.md                   # This file
 ```
 
+### Data Flow
+```mermaid
+graph TD
+    A[User Interface] --> B{Frontend}
+    B --> C[API Layer]
+    C --> D[Backend Services]
+    D --> E[(Database)]
+    D --> F[AI Models]
+    D --> G[External APIs]
+    F --> D
+    G --> D
+    D --> C
+    C --> B
+    B --> A
+```
+
 ## ✨ Key Features
 
-### 🤖 AI Model Integration
-- **Multi-Model Support**: OpenAI GPT, Anthropic Claude, and Groq models
+### 🤖 Multi-AI Model Integration
+- **OpenAI GPT Models**: GPT-4, GPT-3.5 Turbo
+- **Anthropic Claude**: Claude 3.5 Sonnet
+- **Groq Models**: Ultra-fast Llama 3.1 inference
 - **Streaming Responses**: Real-time AI response generation
 - **Enhanced Context**: AI responses enriched with external data
 - **Conversation History**: Persistent chat sessions
 
 ### 💬 Enhanced Chat Interface
-- **Multi-AI Model Support**: Switch between GPT, Claude, and Groq models
+- **Multi-AI Model Support**: Switch between different AI models
 - **Streaming Responses**: Real-time AI response generation with typing indicators
 - **Conversation History**: Persistent chat sessions with history tracking
 - **Quick Prompts**: Double-click example prompts for instant submission
 - **Keyboard Shortcuts**: Cmd+J/Ctrl+J to focus input from anywhere
 - **Enhanced Input Area**: Modern rounded input with embedded controls
-- **Voice Support**: Microphone button for voice input
-- **File Attachment**: Paperclip button for file uploads
+- **Voice Support**: Microphone button for voice input (Cmd+Enter/Ctrl+Enter)
 - **Action Buttons**: Globe for web search, TrendingUp for crypto data
 
 ### 🌐 External API Integrations
