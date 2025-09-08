@@ -52,6 +52,8 @@ export default function Home() {
     message: string;
     theme: 'dark' | 'light';
   }>({ isVisible: false, message: '', theme: 'dark' });
+  // Add a ref to track if recognition is currently starting
+  const isStartingRef = useRef(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -99,6 +101,14 @@ export default function Home() {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Check for Cmd+Enter (Mac) or Ctrl+Enter (Windows/Linux) for voice input
+    if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+      e.preventDefault();
+      toggleVoiceRecognition();
+      return;
+    }
+    
+    // Existing Enter key handling
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmit(e as React.FormEvent);
@@ -199,6 +209,9 @@ export default function Home() {
         .map(result => result.transcript)
         .join('');
       
+      // Reset the starting flag when we get results
+      isStartingRef.current = false;
+      
       // Check for voice commands to switch theme
       const lowerTranscript = transcript.toLowerCase().trim();
       if (lowerTranscript === 'system switch dark mode') {
@@ -237,6 +250,11 @@ export default function Home() {
         }
         setIsListening(false);
         return; // Don't set input text for voice commands
+      } else if (lowerTranscript === 'system clear') {
+        // Clear the input immediately
+        setInputText('');
+        setIsListening(false);
+        return; // Don't set input text for voice commands
       }
       
       setInputText(transcript);
@@ -249,6 +267,9 @@ export default function Home() {
     };
 
     recognition.onerror = (event: any) => {
+      // Reset the starting flag on error
+      isStartingRef.current = false;
+      
       // console.error('Speech recognition error', event.error);
       setIsListening(false);
       
@@ -282,10 +303,14 @@ export default function Home() {
     };
 
     recognition.onend = () => {
+      // Reset the starting flag when recognition ends
+      isStartingRef.current = false;
       setIsListening(false);
     };
 
     recognition.onstart = () => {
+      // Reset the starting flag when recognition starts
+      isStartingRef.current = false;
       setIsListening(true);
     };
 
@@ -296,6 +321,8 @@ export default function Home() {
     return () => {
       if (speechRecognitionRef.current) {
         try {
+          // Reset the starting flag
+          isStartingRef.current = false;
           speechRecognitionRef.current.stop();
         } catch (e) {
           console.warn('Error stopping speech recognition:', e);
@@ -321,42 +348,86 @@ export default function Home() {
 
     if (isListening) {
       // Stop listening
-      speechRecognitionRef.current.stop();
-      setIsListening(false);
-    } else {
-      // Start listening
       try {
+        // Reset the starting flag when stopping
+        isStartingRef.current = false;
+        speechRecognitionRef.current.stop();
+        setIsListening(false);
+      } catch (error) {
+        console.warn('Error stopping speech recognition:', error);
+      }
+    } else {
+      // Start listening - Check if already starting or listening
+      try {
+        // Additional check to prevent InvalidStateError
+        if (isStartingRef.current) {
+          // Already starting, no need to start again
+          return;
+        }
+        
+        // Check if recognition is already running
+        if (speechRecognitionRef.current.state === 'listening') {
+          // Already listening, stop it first
+          speechRecognitionRef.current.stop();
+        }
+        
+        // Set the flag to indicate we're starting
+        isStartingRef.current = true;
         speechRecognitionRef.current.start();
         // isListening state will be set by the onstart event handler
         setVoiceError(null);
       } catch (error: any) {
         console.error('Error starting speech recognition:', error);
-        setIsListening(false);
+        // Reset the starting flag on error
+        isStartingRef.current = false;
+        
+        // Don't set isListening to false here as it might be starting
         let errorMessage = 'Error starting speech recognition';
         if (error.name === 'NotAllowedError') {
           errorMessage = 'Microphone access denied. Please allow microphone access in your browser settings.';
         } else if (error.name === 'NotFoundError') {
           errorMessage = 'No microphone found. Please connect a microphone and try again.';
+        } else if (error.name === 'InvalidStateError') {
+          // This is the error we're trying to fix - recognition is already started
+          errorMessage = ''; // Don't show error message for this case
+          // The recognition is already running, so update the state to reflect that
+          setIsListening(true);
         } else if (error.message) {
           errorMessage = error.message;
         }
-        setVoiceError(errorMessage);
         
-        // Clear error message after 5 seconds
-        setTimeout(() => {
-          setVoiceError(null);
-        }, 5000);
+        if (errorMessage) {
+          setVoiceError(errorMessage);
+          
+          // Clear error message after 5 seconds
+          setTimeout(() => {
+            setVoiceError(null);
+          }, 5000);
+        }
       }
     }
   };
 
   // Keyboard shortcut to focus input field (⌘+J on Mac, Ctrl+J on Windows/Linux)
+  // and to trigger voice recognition (Cmd+Enter on Mac, Ctrl+Enter on Windows/Linux)
   useEffect(() => {
+    let lastVoiceToggleTime = 0;
+    
     const handleKeyDown = (e: KeyboardEvent) => {
       // Check if Cmd (Mac) or Ctrl (Windows/Linux) is pressed along with 'J'
       if ((e.metaKey || e.ctrlKey) && e.key === 'j') {
         e.preventDefault();
         inputRef.current?.focus();
+      }
+      // Check for Cmd+Enter (Mac) or Ctrl+Enter (Windows/Linux) for voice input
+      else if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+        // Prevent rapid toggling
+        const now = Date.now();
+        if (now - lastVoiceToggleTime > 500) { // Increased debounce to 500ms
+          e.preventDefault();
+          toggleVoiceRecognition();
+          lastVoiceToggleTime = now;
+        }
       }
     };
 
@@ -364,7 +435,7 @@ export default function Home() {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, []);
+  }, [isListening]);
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100 dark:from-gray-1000 dark:via-gray-950 dark:to-gray-900 text-gray-900 dark:text-gray-50 transition-all duration-500">
@@ -472,7 +543,7 @@ export default function Home() {
                     e.stopPropagation();
                     setIsSidebarOpen(false);
                   }}
-                  title="Hide sidebar"
+                  title="Close sidebar"
                   data-sidebar-element="mobile-sidebar-toggle"
                 >
                   <ChevronLeft className="h-4 w-4 text-gray-600 dark:text-gray-400 mx-auto" />
@@ -641,9 +712,9 @@ export default function Home() {
               </div>
               <div className="flex items-center space-x-1">
                 <button 
-                  className="w-10 h-10 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800/60 transition-colors flex items-center justify-center" // hide sidebar toggle button
+                  className="w-10 h-10 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800/60 transition-colors flex items-center justify-center" // Close sidebar toggle button
                   onClick={(e) => {e.stopPropagation(); setIsDesktopSidebarCollapsed(!isDesktopSidebarCollapsed);}}
-                  title={isDesktopSidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'}
+                  title={isDesktopSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
                   data-sidebar-element="desktop-sidebar-toggle"
                 >
                   {isDesktopSidebarCollapsed ? (
@@ -664,9 +735,9 @@ export default function Home() {
               </div>
               <div className="flex flex-col items-center space-y-1">
                 <button 
-                  className="w-10 h-10 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800/60 transition-colors flex items-center justify-center" // show sidebar toggle button
+                  className="w-10 h-10 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800/60 transition-colors flex items-center justify-center" // Open sidebar toggle button
                   onClick={(e) => {e.stopPropagation(); setIsDesktopSidebarCollapsed(!isDesktopSidebarCollapsed);}}
-                  title={isDesktopSidebarCollapsed ? 'Show sidebar' : 'Hide sidebar'}
+                  title={isDesktopSidebarCollapsed ? 'Open sidebar' : 'Close sidebar'}
                   data-sidebar-element="desktop-sidebar-toggle"
                 >
                   {isDesktopSidebarCollapsed ? (
@@ -693,7 +764,7 @@ export default function Home() {
                 <button 
                   className="md:hidden p-2.5 rounded-2xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-md border border-white/20 dark:border-gray-700/30 hover:bg-white/80 dark:hover:bg-gray-700/80 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 flex items-center justify-center"
                   onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                  title={isSidebarOpen ? 'Hide sidebar' : 'Show sidebar'}
+                  title={isSidebarOpen ? 'Close sidebar' : 'Open sidebar'}
                 >
                   {isSidebarOpen ? (
                     <ChevronLeft className="h-5 w-5 text-gray-700 dark:text-gray-300 mx-auto" />
@@ -908,7 +979,7 @@ export default function Home() {
                           }`}
                           onClick={toggleVoiceRecognition}
                           disabled={!!voiceError}
-                          title={voiceError || (isListening ? 'Stop listening' : 'Start voice input')}
+                          title={voiceError || (isListening ? 'Stop listening (Cmd+Enter or Ctrl+Enter)' : 'Start voice input (Cmd+Enter or Ctrl+Enter)')}
                         >
                           {isListening ? (
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
@@ -923,7 +994,14 @@ export default function Home() {
                         <button
                           type="submit"
                           disabled={!inputText.trim() || isLoading}
-                          className="flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 dark:from-blue-500 dark:to-blue-600 disabled:from-gray-100 disabled:to-gray-100 dark:disabled:from-gray-800 dark:disabled:to-gray-800 text-white transition-all duration-200 shadow hover:shadow-md disabled:shadow transform hover:scale-105 disabled:scale-100 disabled:cursor-not-allowed border border-gray-900/20 dark:border-gray-100/20 group"
+                          className={`flex-shrink-0 w-9 h-9 flex items-center justify-center rounded-full transition-all duration-200 shadow hover:shadow-md disabled:shadow transform disabled:scale-100 disabled:cursor-not-allowed border border-gray-900/20 dark:border-gray-100/20 group ${
+                            inputText.trim() && !isLoading
+                              ? 'animate-aurora-btn bg-[length:200%_auto]' 
+                              : 'bg-gray-100 dark:bg-gray-800'
+                          }`}
+                          style={inputText.trim() && !isLoading ? {
+                            backgroundImage: 'linear-gradient(135deg, #FF0080, #7928CA, #0070F3, #38bdf8, #FF0080)',
+                          } : {}}
                         >
                           <svg 
                             width="20" 
@@ -931,7 +1009,11 @@ export default function Home() {
                             viewBox="0 0 20 20" 
                             fill="currentColor" 
                             xmlns="http://www.w3.org/2000/svg" 
-                            className={`h-5 w-5 group-hover:-translate-y-0.5 transition-transform duration-200 mx-auto ${(!inputText.trim() || isLoading) ? "text-gray-900 dark:text-gray-100" : "text-white"}`}
+                            className={`h-5 w-5 group-hover:-translate-y-0.5 transition-transform duration-200 mx-auto ${
+                            (!inputText.trim() || isLoading) 
+                              ? "text-gray-900 dark:text-gray-100" 
+                              : "text-white"
+                          }`}
                           >
                             <path d="M8.99992 16V6.41407L5.70696 9.70704C5.31643 10.0976 4.68342 10.0976 4.29289 9.70704C3.90237 9.31652 3.90237 8.6835 4.29289 8.29298L9.29289 3.29298L9.36907 3.22462C9.76184 2.90427 10.3408 2.92686 10.707 3.29298L15.707 8.29298L15.7753 8.36915C16.0957 8.76192 16.0731 9.34092 15.707 9.70704C15.3408 10.0732 14.7618 10.0958 14.3691 9.7754L14.2929 9.70704L10.9999 6.41407V16C10.9999 16.5523 10.5522 17 9.99992 17C9.44764 17 8.99992 16.5523 8.99992 16Z" fill="currentColor" />
                           </svg>
