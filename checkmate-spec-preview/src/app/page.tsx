@@ -255,6 +255,54 @@ export default function Home() {
         setInputText('');
         setIsListening(false);
         return; // Don't set input text for voice commands
+      } else if (lowerTranscript === 'system close sidebar') {
+        // Close sidebar for both mobile and desktop
+        const mobileAlreadyClosed = !isSidebarOpen;
+        const desktopAlreadyClosed = isDesktopSidebarCollapsed;
+        
+        setIsSidebarOpen(false);
+        setIsDesktopSidebarCollapsed(true);
+        
+        // Provide contextual feedback
+        if (mobileAlreadyClosed && desktopAlreadyClosed) {
+          setVoiceThemeNotification({
+            isVisible: true,
+            message: 'Sidebar already closed',
+            theme: isDarkMode ? 'dark' : 'light'
+          });
+        } else {
+          setVoiceThemeNotification({
+            isVisible: true,
+            message: 'Sidebar closed',
+            theme: isDarkMode ? 'dark' : 'light'
+          });
+        }
+        setIsListening(false);
+        return; // Don't set input text for voice commands
+      } else if (lowerTranscript === 'system open sidebar') {
+        // Open sidebar for both mobile and desktop
+        const mobileAlreadyOpen = isSidebarOpen;
+        const desktopAlreadyOpen = !isDesktopSidebarCollapsed;
+        
+        setIsSidebarOpen(true);
+        setIsDesktopSidebarCollapsed(false);
+        
+        // Provide contextual feedback
+        if (mobileAlreadyOpen && desktopAlreadyOpen) {
+          setVoiceThemeNotification({
+            isVisible: true,
+            message: 'Sidebar already open',
+            theme: isDarkMode ? 'dark' : 'light'
+          });
+        } else {
+          setVoiceThemeNotification({
+            isVisible: true,
+            message: 'Sidebar opened',
+            theme: isDarkMode ? 'dark' : 'light'
+          });
+        }
+        setIsListening(false);
+        return; // Don't set input text for voice commands
       }
       
       setInputText(transcript);
