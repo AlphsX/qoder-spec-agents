@@ -33,6 +33,7 @@ export default function Home() {
   const [selectedModel, setSelectedModel] = useState('openai/gpt-oss-120b');
   const [showWelcome, setShowWelcome] = useState(true);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Added for dropdown functionality
+  const [selectedTool, setSelectedTool] = useState<string | null>(null);
   const [availableModels, setAvailableModels] = useState<AIModel[]>([
     { id: 'openai/gpt-oss-120b', name: 'GPT-OSS-120B', provider: 'OpenAI', description: 'Open source 120B parameter model' },
     { id: 'meta-llama/llama-4-maverick-17b-128e-instruct', name: 'Llama-4 Maverick 17B', provider: 'Meta', description: '17B parameter model with 128 experts' },
@@ -58,6 +59,7 @@ export default function Home() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null); // Added for dropdown click outside detection
+  const plusButtonRef = useRef<HTMLButtonElement>(null); // Added for plus button reference
   const sidebarRef = useRef<HTMLDivElement>(null); // Added for sidebar click outside detection
 
   const scrollToBottom = () => {
@@ -118,7 +120,8 @@ export default function Home() {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
+          plusButtonRef.current && !plusButtonRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
       }
     };
@@ -145,12 +148,21 @@ export default function Home() {
   const handleSearchWeb = () => {
     setInputText('Search the web for latest information');
     setIsDropdownOpen(false);
+    setSelectedTool('web');
     inputRef.current?.focus();
   };
 
   const handleGetCryptoData = () => {
     setInputText('Get current cryptocurrency market data');
     setIsDropdownOpen(false);
+    setSelectedTool('crypto');
+    inputRef.current?.focus();
+  };
+
+  const handleAIChat = () => {
+    setInputText('');
+    setIsDropdownOpen(false);
+    setSelectedTool('ai');
     inputRef.current?.focus();
   };
 
@@ -511,6 +523,8 @@ export default function Home() {
                       e.stopPropagation(); // Prevent sidebar toggle when clicking logo
                       setMessages([]);
                       setShowWelcome(true);
+                      setSelectedTool(null); // Reset selected tool
+                      setInputText(''); // Clear input field
                     }}
                       data-sidebar-element="logo"
                     >
@@ -534,6 +548,8 @@ export default function Home() {
                 e.stopPropagation();
                 setMessages([]);
                 setShowWelcome(true);
+                setSelectedTool(null); // Reset selected tool
+                setInputText(''); // Clear input field
               }}>
                 <Plus className="h-5 w-5 flex-shrink-0" />
                 <span>New Chat</span>
@@ -633,6 +649,8 @@ export default function Home() {
                     e.stopPropagation(); // Prevent sidebar toggle when clicking logo
                     setMessages([]);
                     setShowWelcome(true);
+                    setSelectedTool(null); // Reset selected tool
+                    setInputText(''); // Clear input field
                   }}
                   data-sidebar-element="logo"
                 >
@@ -653,6 +671,8 @@ export default function Home() {
                 e.stopPropagation();
                 setMessages([]);
                 setShowWelcome(true);
+                setSelectedTool(null); // Reset selected tool
+                setInputText(''); // Clear input field
               }}
               data-sidebar-element="new-chat-button"
             >
@@ -665,6 +685,8 @@ export default function Home() {
                 e.stopPropagation();
                 setMessages([]);
                 setShowWelcome(true);
+                setSelectedTool(null); // Reset selected tool
+                setInputText(''); // Clear input field
               }}
               data-sidebar-element="new-chat-button"
             >
@@ -962,7 +984,47 @@ export default function Home() {
         </div>
 
         {/* Enhanced Input Area - Premium UX - Compact */}
-        <div className="relative overflow-hidden">
+        <div className="relative">
+          {/* Dropdown menu for search options - positioned above the plus button */}
+          {isDropdownOpen && (
+            <div 
+              className="absolute bottom-full mb-2 w-48 rounded-2xl shadow-lg border border-gray-200/40 dark:border-gray-700/40 py-2 z-10 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl animate-fadeInUp"
+              style={{ 
+                left: '0.5rem',
+                bottom: 'calc(100% + 0.5rem)',
+                animationDuration: '0.3s'
+              }}
+              ref={dropdownRef}
+            >
+              <div className="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Select Tools
+              </div>
+              <button
+                type="button"
+                className="w-full px-4 py-3 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-blue-500/10 dark:hover:bg-blue-500/10 flex items-center transition-all duration-200 group rounded-xl mx-1"
+                onClick={handleSearchWeb}
+              >
+                <Globe className="h-5 w-5 mr-3 text-blue-500 group-hover:scale-110 transition-transform duration-200" />
+                <span className="group-hover:translate-x-1 transition-transform duration-200 font-medium">Search web</span>
+              </button>
+              <button
+                type="button"
+                className="w-full px-4 py-3 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-green-500/10 dark:hover:bg-green-500/10 flex items-center transition-all duration-200 group rounded-xl mx-1"
+                onClick={handleGetCryptoData}
+              >
+                <TrendingUp className="h-5 w-5 mr-3 text-green-500 group-hover:scale-110 transition-transform duration-200" />
+                <span className="group-hover:translate-x-1 transition-transform duration-200 font-medium">Get crypto data</span>
+              </button>
+              <button
+                type="button"
+                className="w-full px-4 py-3 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-purple-500/10 dark:hover:bg-purple-500/10 flex items-center transition-all duration-200 group rounded-xl mx-1"
+                onClick={handleAIChat}
+              >
+                <Sparkles className="h-5 w-5 mr-3 text-purple-500 group-hover:scale-110 transition-transform duration-200" />
+                <span className="group-hover:translate-x-1 transition-transform duration-200 font-medium">AI Chat</span>
+              </button>
+            </div>
+          )}
           {/* Content */}
           <div className="relative z-10 p-3">
             <div className="max-w-3xl mx-auto">
@@ -973,35 +1035,22 @@ export default function Home() {
                   <div className="flex-1 relative">
                     <div className="relative bg-transparent rounded-3xl overflow-hidden border border-gray-900/20 dark:border-gray-100/20">
                       {/* Plus button with dropdown for search web and crypto data - moved inside the input container */}
-                      <div className="absolute left-2 bottom-2 flex-shrink-0 w-10 h-10" ref={dropdownRef}>
+                      <div className="absolute left-2 bottom-2 flex-shrink-0 w-10 h-10">
                         <button
                           type="button"
-                          className="flex-shrink-0 w-10 h-10 flex items-center justify-center"
+                          className={`flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full transition-all duration-200 ease-in-out ${isDropdownOpen ? 'bg-gray-100 dark:bg-gray-700' : 'hover:bg-gray-100 dark:hover:bg-gray-700'}`}
                           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                          style={{
+                            transform: isDropdownOpen ? 'rotate(45deg)' : 'rotate(0deg)',
+                            color: selectedTool === 'web' ? '#3b82f6' : 
+                                   selectedTool === 'crypto' ? '#10b981' : 
+                                   selectedTool === 'ai' ? '#8b5cf6' : 
+                                   isDarkMode ? '#9ca3af' : '#6b7280'
+                          }}
+                          ref={plusButtonRef}
                         >
-                          <Plus className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+                          <Plus className="h-5 w-5" />
                         </button>
-                        {/* Dropdown menu for search options */}
-                        {isDropdownOpen && (
-                          <div className="absolute bottom-full left-0 mb-2 w-48 rounded-xl shadow-lg border border-gray-200/40 dark:border-gray-700/40 py-2 z-10 bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl">
-                            <button
-                              type="button"
-                              className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/40 flex items-center"
-                              onClick={handleSearchWeb}
-                            >
-                              <Globe className="h-4 w-4 mr-2" />
-                              Search web
-                            </button>
-                            <button
-                              type="button"
-                              className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/40 flex items-center"
-                              onClick={handleGetCryptoData}
-                            >
-                              <TrendingUp className="h-4 w-4 mr-2" />
-                              Get crypto data
-                            </button>
-                          </div>
-                        )}
                       </div>
                       
                       <textarea
