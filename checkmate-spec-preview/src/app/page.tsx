@@ -47,12 +47,12 @@ export default function Home() {
   // Voice recognition state variables
   const [isListening, setIsListening] = useState(false);
   const speechRecognitionRef = useRef<any>(null);
-  const [voiceError, setVoiceError] = useState<string | null>(null);
   const [voiceThemeNotification, setVoiceThemeNotification] = useState<{
     isVisible: boolean;
     message: string;
     theme: 'dark' | 'light';
-  }>({ isVisible: false, message: '', theme: 'dark' });
+    type?: 'info' | 'success' | 'error' | 'warning';
+  }>({ isVisible: false, message: '', theme: 'dark', type: 'info' });
   // Add a ref to track if recognition is currently starting
   const isStartingRef = useRef(false);
 
@@ -204,7 +204,13 @@ export default function Home() {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     
     if (!SpeechRecognition) {
-      setVoiceError('Speech recognition not supported in this browser');
+      // Show error using VoiceThemeNotification
+      setVoiceThemeNotification({
+        isVisible: true,
+        message: 'Speech recognition not supported in this browser. Please try Chrome, Edge, or Safari.',
+        theme: isDarkMode ? 'dark' : 'light',
+        type: 'error'
+      });
       return;
     }
 
@@ -233,13 +239,15 @@ export default function Home() {
           setVoiceThemeNotification({
             isVisible: true,
             message: 'Switched to dark mode',
-            theme: 'dark'
+            theme: 'dark',
+            type: 'success'
           });
         } else {
           setVoiceThemeNotification({
             isVisible: true,
             message: 'Already in dark mode',
-            theme: 'dark'
+            theme: 'dark',
+            type: 'info'
           });
         }
         setIsListening(false);
@@ -251,13 +259,15 @@ export default function Home() {
           setVoiceThemeNotification({
             isVisible: true,
             message: 'Switched to light mode',
-            theme: 'light'
+            theme: 'light',
+            type: 'success'
           });
         } else {
           setVoiceThemeNotification({
             isVisible: true,
             message: 'Already in light mode',
-            theme: 'light'
+            theme: 'light',
+            type: 'info'
           });
         }
         setIsListening(false);
@@ -280,13 +290,15 @@ export default function Home() {
           setVoiceThemeNotification({
             isVisible: true,
             message: 'Sidebar already closed',
-            theme: isDarkMode ? 'dark' : 'light'
+            theme: isDarkMode ? 'dark' : 'light',
+            type: 'info'
           });
         } else {
           setVoiceThemeNotification({
             isVisible: true,
             message: 'Sidebar closed',
-            theme: isDarkMode ? 'dark' : 'light'
+            theme: isDarkMode ? 'dark' : 'light',
+            type: 'success'
           });
         }
         setIsListening(false);
@@ -304,13 +316,15 @@ export default function Home() {
           setVoiceThemeNotification({
             isVisible: true,
             message: 'Sidebar already open',
-            theme: isDarkMode ? 'dark' : 'light'
+            theme: isDarkMode ? 'dark' : 'light',
+            type: 'info'
           });
         } else {
           setVoiceThemeNotification({
             isVisible: true,
             message: 'Sidebar opened',
-            theme: isDarkMode ? 'dark' : 'light'
+            theme: isDarkMode ? 'dark' : 'light',
+            type: 'success'
           });
         }
         setIsListening(false);
@@ -354,12 +368,20 @@ export default function Home() {
         //   errorMessage = `Speech recognition error: ${event.error}`;
       }
       
-      setVoiceError(errorMessage);
-      
-      // Clear error message after 5 seconds
-      setTimeout(() => {
-        setVoiceError(null);
-      }, 5000);
+      // Show error using VoiceThemeNotification instead of bottom text
+      if (errorMessage) {
+        setVoiceThemeNotification({
+          isVisible: true,
+          message: errorMessage,
+          theme: isDarkMode ? 'dark' : 'light',
+          type: 'error'
+        });
+        
+        // Clear error message after 5 seconds (existing behavior)
+        setTimeout(() => {
+          setVoiceThemeNotification(prev => ({ ...prev, isVisible: false }));
+        }, 5000);
+      }
     };
 
     recognition.onend = () => {
@@ -397,12 +419,22 @@ export default function Home() {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     
     if (!SpeechRecognition) {
-      setVoiceError('Speech recognition not supported in this browser. Please try Chrome, Edge, or Safari.');
+      setVoiceThemeNotification({
+        isVisible: true,
+        message: 'Speech recognition not supported in this browser. Please try Chrome, Edge, or Safari.',
+        theme: isDarkMode ? 'dark' : 'light',
+        type: 'error'
+      });
       return;
     }
 
     if (!speechRecognitionRef.current) {
-      setVoiceError('Speech recognition not initialized properly');
+      setVoiceThemeNotification({
+        isVisible: true,
+        message: 'Speech recognition not initialized properly',
+        theme: isDarkMode ? 'dark' : 'light',
+        type: 'error'
+      });
       return;
     }
 
@@ -435,7 +467,6 @@ export default function Home() {
         isStartingRef.current = true;
         speechRecognitionRef.current.start();
         // isListening state will be set by the onstart event handler
-        setVoiceError(null);
       } catch (error: any) {
         console.error('Error starting speech recognition:', error);
         // Reset the starting flag on error
@@ -457,11 +488,16 @@ export default function Home() {
         }
         
         if (errorMessage) {
-          setVoiceError(errorMessage);
+          setVoiceThemeNotification({
+            isVisible: true,
+            message: errorMessage,
+            theme: isDarkMode ? 'dark' : 'light',
+            type: 'error'
+          });
           
           // Clear error message after 5 seconds
           setTimeout(() => {
-            setVoiceError(null);
+            setVoiceThemeNotification(prev => ({ ...prev, isVisible: false }));
           }, 5000);
         }
       }
@@ -865,6 +901,7 @@ export default function Home() {
           <VoiceThemeNotification
             message={voiceThemeNotification.message}
             theme={voiceThemeNotification.theme}
+            type={voiceThemeNotification.type}
             isVisible={voiceThemeNotification.isVisible}
             onClose={() => setVoiceThemeNotification(prev => ({ ...prev, isVisible: false }))}
           />
@@ -1075,8 +1112,7 @@ export default function Home() {
                               : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                           }`}
                           onClick={toggleVoiceRecognition}
-                          disabled={!!voiceError}
-                          title={voiceError || (isListening ? 'Stop listening (Cmd+Enter or Ctrl+Enter)' : 'Start voice input (Cmd+Enter or Ctrl+Enter)')}
+                          title={isListening ? 'Stop listening (Cmd+Enter or Ctrl+Enter)' : 'Start voice input (Cmd+Enter or Ctrl+Enter)'}
                         >
                           {isListening ? (
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
@@ -1121,12 +1157,7 @@ export default function Home() {
                 </div>
 
               </form>
-              {/* Voice error message */}
-              {voiceError && (
-                <div className="mt-2 text-center">
-                  <p className="text-sm text-red-500 dark:text-red-400">{voiceError}</p>
-                </div>
-              )}
+
             </div>
           </div>
         </div>
